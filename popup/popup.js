@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const rodWidthGroup = document.getElementById("rod-width-group");
   const rangeRodWidth = document.getElementById("range-rod-width");
   const rodWidthDisplay = document.getElementById("rod-width-display");
+  const rangeShadow = document.getElementById("range-shadow");
+  const shadowDisplay = document.getElementById("shadow-display");
 
   const floatingOptions = document.getElementById("floating-options");
   const rangeFloatingAngle = document.getElementById("range-floating-angle");
@@ -53,6 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     style: "lavender",
     size: 160,
     rodWidth: 7,
+    shadowIntensity: 50,
     color: "#8E5AF7",
     strokeWidth: 4,
     fadeDuration: 3000,
@@ -98,6 +101,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       const rw = state.rodWidth ?? 7;
       rangeRodWidth.value = rw;
       rodWidthDisplay.textContent = `${rw} px`;
+    }
+
+    // Shadow / 3D Depth
+    if (rangeShadow && shadowDisplay) {
+      const si = state.shadowIntensity ?? 50;
+      rangeShadow.value = si;
+      shadowDisplay.textContent = `${si}%`;
     }
 
     // Floating Angle & Dynamic
@@ -386,6 +396,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       const val = Number(rangeRodWidth.value);
       rodWidthDisplay.textContent = `${val} px`;
       await chrome.storage.local.set({ rodWidth: val });
+    });
+  }
+
+  if (rangeShadow) {
+    rangeShadow.addEventListener("input", async () => {
+      const val = Number(rangeShadow.value);
+      shadowDisplay.textContent = `${val}%`;
+      await chrome.storage.local.set({ shadowIntensity: val });
     });
   }
 

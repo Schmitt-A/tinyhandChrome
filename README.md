@@ -22,6 +22,7 @@ Die Erweiterung injiziert einen virtuellen Zeiger und eine transparente Zeichene
 - 📏 **Echte TinyHand-Größe & Stabbreite:** 
   - **Zeigergröße (60 – 320 px):** Präsentationszeiger in jeder gewünschten Größe – von dezent bis weithin sichtbar.
   - **Stabbreite stufenlos regelbar (2 – 24 px):** Passe die Dicke des Zeigestabes perfekt an deine Bildschirmauflösung und deinen Stil an.
+  - **Schatten & 3D-Tiefe stufenlos regelbar (0% – 100%):** Weicher, realistischer Drop-Shadow unter Hand und Stab für spürbare räumliche Tiefe über dem Webseiten-Inhalt (oder komplett deaktivierbar für einen flachen Look).
 - 🪄 **Dynamischer Stab-Verlauf & Verankerung:**
   - **Unten rechts (wandert am Rand mit):** Der Stab reicht diagonal aus der rechten unteren Hälfte heran – die Basis bleibt nicht starr an einem Punkt fixiert, sondern gleitet geschmeidig entlang des unteren Randes mit dem Cursor mit.
   - **Unten links (wandert am Rand mit):** Gleitet analog für die linke Bildschirmseite mit.

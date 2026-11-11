@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS = {
   style: "lavender",        // Authentic TinyHand signature default
   size: 160,                // px (authentic prominent TinyHand size)
   rodWidth: 7,              // px (width of pointer rod)
+  shadowIntensity: 50,      // % (depth shadow under hand and rod)
   color: "#8E5AF7",         // Default purple matching Lavender hand
   strokeWidth: 4,           // px
   fadeDuration: 3000,       // 3 seconds auto-fade

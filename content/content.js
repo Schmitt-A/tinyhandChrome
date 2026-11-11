@@ -15,6 +15,7 @@
     style: "lavender",
     size: 160,
     rodWidth: 7,
+    shadowIntensity: 50,
     color: "#8E5AF7",
     strokeWidth: 4,
     fadeDuration: 3000,
@@ -159,13 +160,9 @@
       #tinyhand-inner {
         display: block; width: 100%; height: auto; pointer-events: none !important;
         will-change: transform;
-        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.38));
       }
       #tinyhand-img {
         display: block; width: 100%; height: auto; pointer-events: none !important;
-      }
-      .style-laser #tinyhand-inner {
-        filter: drop-shadow(0 0 14px rgba(255, 59, 48, 0.95)) !important;
       }
       .tinyhand-ripple {
         position: absolute; border-radius: 50%; pointer-events: none !important;
@@ -201,8 +198,8 @@
     armSvgEl.id = "tinyhand-arm-svg";
     armSvgEl.innerHTML = `
       <defs>
-        <filter id="rod-shadow" x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.38"/>
+        <filter id="rod-shadow" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow id="rod-fe-shadow" dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.38"/>
         </filter>
         <linearGradient id="rod-grad-carbon" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#141416"/>
@@ -295,7 +292,46 @@
     }
   }
 
-  // 4. Update Visual Appearance based on Settings
+  // 4. Update Shadow & 3D Depth
+  function updateShadowStyles() {
+    if (!innerEl || !armSvgEl) return;
+
+    const intensity = settings.shadowIntensity !== undefined ? Number(settings.shadowIntensity) : 50;
+    const factor = intensity / 100;
+
+    // A) Hand drop-shadow
+    if (settings.style === "laser") {
+      const laserGlow = Math.round(14 * (0.4 + 0.6 * factor));
+      const laserOp = (0.5 + 0.45 * factor).toFixed(2);
+      innerEl.style.filter = `drop-shadow(0 0 ${laserGlow}px rgba(255, 59, 48, ${laserOp}))`;
+    } else if (intensity <= 0) {
+      innerEl.style.filter = "none";
+    } else {
+      const dx = Math.round(1 * factor);
+      const dy = Math.max(1, Math.round(7 * factor));
+      const blur = Math.max(2, Math.round(14 * factor));
+      const op = (0.15 + 0.50 * factor).toFixed(2);
+      innerEl.style.filter = `drop-shadow(${dx}px ${dy}px ${blur}px rgba(0, 0, 0, ${op}))`;
+    }
+
+    // B) Rod SVG drop-shadow filter
+    const feShadow = armSvgEl.querySelector("#rod-fe-shadow");
+    if (feShadow) {
+      if (intensity <= 0) {
+        feShadow.setAttribute("flood-opacity", "0");
+      } else {
+        const rodDy = Math.max(1, Math.round(6 * factor));
+        const rodBlur = Math.max(2, Math.round(6 * factor));
+        const rodOp = (0.15 + 0.45 * factor).toFixed(2);
+        feShadow.setAttribute("dx", "2");
+        feShadow.setAttribute("dy", String(rodDy));
+        feShadow.setAttribute("stdDeviation", String(rodBlur));
+        feShadow.setAttribute("flood-opacity", String(rodOp));
+      }
+    }
+  }
+
+  // 5. Update Visual Appearance based on Settings
   function updatePointerVisuals() {
     updateCursorVisibility();
 
@@ -327,6 +363,9 @@
     // Set Size
     pointerEl.style.width = settings.size + "px";
     pointerEl.className = `style-${settings.style}`;
+
+    // Apply 3D shadow depth
+    updateShadowStyles();
 
     startMainLoop();
   }

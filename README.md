@@ -1,146 +1,201 @@
-# TinyHand for Chrome 👆✨
+# tinyhandChrome 👆✨
 
-> **Virtueller Präsentations-Zeiger & verblassende Freihand-Zeichnungen für Chrome-Tab Bildschirmfreigaben (BigBlueButton, Google Meet, Zoom)**  
-> Inspiriert vom genialen Open-Source-Projekt [nilbuild/tinyhand](https://github.com/nilbuild/tinyhand).
-
----
-
-## Warum eine Chrome-Erweiterung für Tab-Sharing?
-
-Wenn du in **BigBlueButton (BBB)**, **Google Meet**, **MS Teams** oder **Zoom** nicht deinen gesamten Bildschirm teilst, sondern aus Datenschutz- oder Performancegründen **nur einen einzelnen Chrome-Tab**, werden native macOS-Overlay-Apps (wie die native TinyHand-Desktop-App) von der Browser-Aufnahme ignoriert.
-
-**TinyHand for Chrome löst dieses Problem elegant:**  
-Die Erweiterung injiziert einen virtuellen Zeiger und eine transparente Zeichenebene direkt in den DOM-Baum der Webseite (gekapselt in einem isolierten Shadow DOM). Dadurch wird der Zeiger **1:1 in den Video-Stream des geteilten Tabs übertragen** – deine Teilnehmer sehen die Hand und alle Markierungen flüssig und gestochen scharf!
+> **Virtueller Präsentations-Zeiger & verblassende Freihand-Tinte für Chrome-Tab Bildschirmfreigaben (BigBlueButton, Google Meet, Zoom, MS Teams)**  
+> Inspiriert vom genialen macOS Open-Source-Projekt [nilbuild/tinyhand](https://github.com/nilbuild/tinyhand).
 
 ---
 
-## Features
+## 📌 Über das Projekt (About)
 
-- 👆 **Alle 36 originalen Zeigerstile von nilbuild/tinyhand 1:1 integriert:**
-  - **Favoriten direkt als Kacheln:** Lavender toy (Standard), Cursor glove, Coral vinyl, Plush, Robot, Laser dot.
-  - **30 weitere Stile per Dropdown wählbar:** Astronaut, Midnight, Sky, Cactus, Chocolate, Chrome, Cloud, Gingerbread, Fuzzy, Glass, Grass, Holo, Jelly, Knit, Lava, Leaf, Lemon, Low poly, Marble, Mech, Mint, Monster, Neon, Pastel, Bubblegum, Pixel, Skeleton, Space, Terrazzo, Water, Wood.
-- 📏 **Echte TinyHand-Größe & Stabbreite:** 
-  - **Zeigergröße (60 – 320 px):** Präsentationszeiger in jeder gewünschten Größe – von dezent bis weithin sichtbar.
-  - **Stabbreite stufenlos regelbar (2 – 24 px):** Passe die Dicke des Zeigestabes perfekt an deine Bildschirmauflösung und deinen Stil an.
-  - **Schatten & 3D-Tiefe stufenlos regelbar (0% – 100%):** Weicher, realistischer Drop-Shadow unter Hand und Stab für spürbare räumliche Tiefe über dem Webseiten-Inhalt (oder komplett deaktivierbar für einen flachen Look).
-- 🪄 **Dynamischer Stab-Verlauf & authentische Stab-Materialien:**
-  - **Authentisches 3D-Zylinder-Design:** Wie im originalen *nilbuild/tinyhand* besitzt der Stab nun dynamische zylindrische Lichtreflexe, eine Glanzlinie und eine edle Metall-Zwinge (Manschette) am Übergang zur Hand.
-  - **Materialien passend zum Zeigerstil:** Automatischer Wechsel zwischen Obsidian-Carbon (mit Titan-Zwinge), Ahorn/Birken-Hartholz (mit Messing-Zwinge), poliertem Flugzeug-Aluminium oder schneeweißem Lack.
-  - **Feste, wackelfreie Verbindung:** Hand und Stab sind wie bei einem echten Referenten-Zeigestock kollinear fest miteinander verbunden – kein loses Wackeln der Hand auf dem Stab mehr!
-  - **Unten rechts (wandert am Rand mit):** Der Stab reicht diagonal aus der rechten unteren Hälfte heran – die Basis bleibt nicht starr an einem Punkt fixiert, sondern gleitet geschmeidig entlang des unteren Randes mit dem Cursor mit.
-  - **Unten links (wandert am Rand mit):** Gleitet analog für die linke Bildschirmseite mit.
-  - **Dynamisch von unten (folgt & neigt sich):** In der Bildschirmmitte zeigt der Stab gerade von unten nach oben. Wandert der Cursor nach links oder rechts, wandert das Stabende dynamisch mit und der Stab neigt sich organisch schräg in die Bewegungsrichtung.
-  - **Frei schwebend (ohne langen Stab):** Hand ohne Stab – mit **stufenloser Zeiger-Neigung (-60° bis +60°)** sowie optionaler **dynamischer Neigung**, die sich fließend an Bildschirmposition und Mausbewegung anpasst.
-- 🫁 **Dezente Animationen individuell regelbar (jeweils 0% – 200%):**
-  - **Bewegungs-Dynamik & Trägheit:** Regelbare Trägheits-Neigung (Inertia Tilt) und elastische Stabfederung bei Mausbewegung.
-  - **Atmen & Schweben im Stillstand:** Sanftes, natürliches Atmen und Heben im Ruhezustand – beide Effekte können separat dosiert oder komplett stumm geschaltet werden.
-- 🎯 **Eigene Zeiger mit Klickpunkt-Kalibrierung (Hotspot Picker):** Lade beliebige eigene PNG- oder SVG-Grafiken hoch und kalibriere den Klickpunkt (z. B. Fingerspitze) direkt per Klick oder Ziehen auf die Miniatur-Vorschau – der Cursor trifft immer zu 100% präzise!
-- ✍️ **Verblassende Freihand-Tinte (Ephemeral Ink):** Gezeichnete Linien blenden sich nach ca. 3 Sekunden sanft von selbst aus. Deine Präsentationsfolien bleiben immer aufgeräumt.
-- 🎯 **Ungestörtes Webseiten-Surfen:** Normales Klicken bedient wie gewohnt Links, Buttons und Formulare. Mit gedrückter **`Shift`-Taste** schaltest du nahtlos auf Freihand-Zeichnen um.
-- 💥 **Authentisches Klick-Feedback:** Beim Klicken führt die Hand einen kurzen visuellen „Tap“ (Neigung an der Fingerspitze) aus und an der Fingerspitze pulsiert ein dezenter Ring – exakt wie im nativen macOS TinyHand.
-- ⚡ **Retina & High-DPI Support:** Glatte, gestochen scharfe Bézier-Kurven auf MacBook- und 4K-Displays.
-- 🛡️ **Keine Escape-Interception:** Die `Escape`-Taste wird bewusst nicht blockiert, damit der Vollbildmodus in BigBlueButton oder Google Slides stabil bleibt.
+| GitHub-Feld | Empfohlener Inhalt (zum Kopieren) |
+| :--- | :--- |
+| **Description** | *Virtueller Zeigestock & verblassende Freihand-Tinte für Tab-Bildschirmfreigaben in BigBlueButton, Google Meet und Zoom.* |
+| **Description (EN)** | *Virtual presenter pointer & ephemeral drawing ink for Chrome tab screen-sharing in BigBlueButton, Google Meet, and Zoom.* |
+| **Website** | `https://github.com/Schmitt-A/TinyHandChrome` |
+| **Topics / Tags** | `chrome-extension`, `manifest-v3`, `screen-sharing`, `presentation-tool`, `virtual-pointer`, `bigbluebutton`, `google-meet`, `zoom`, `teams`, `tinyhand`, `drawing-tool`, `education`, `remote-work` |
+
+### Warum tinyhandChrome für Tab-Sharing?
+
+Wenn du in **BigBlueButton (BBB)**, **Google Meet**, **Microsoft Teams** oder **Zoom** nicht deinen gesamten Bildschirm teilst, sondern aus Datenschutz- oder Performancegründen **nur einen einzelnen Chrome-Tab**, werden native Desktop-Overlay-Apps (wie die originale TinyHand macOS-App) von der Browser-Aufnahme ignoriert.
+
+**tinyhandChrome löst dieses Problem elegant:**  
+Die Erweiterung injiziert einen virtuellen Zeiger und eine transparente Zeichenebene direkt in den DOM-Baum der Webseite – gekapselt in einem vollständig isolierten **Shadow DOM** ohne CSS-Interferenzen mit der besuchten Seite. Dadurch wird der Zeiger **1:1 in den Video-Stream des geteilten Tabs übertragen** – deine Teilnehmer sehen die Hand und alle Markierungen flüssig, gestochen scharf und ohne Verzögerung!
 
 ---
 
-## Installation in Google Chrome
+## ✨ Features im Überblick
 
-1. Öffne Google Chrome und tippe in die Adresszeile:
+- 👆 **Alle 36 originalen Zeigerstile von nilbuild/tinyhand integriert:**
+  - **Direkte Favoriten:** Lavender Toy (Standard), Cartoon Glove, Coral Vinyl, Plush, Robot, Laser Dot.
+  - **30 weitere Stile per Dropdown:** Astronaut, Midnight, Sky, Cactus, Chocolate, Chrome, Cloud, Gingerbread, Fuzzy, Glass, Grass, Holo, Jelly, Knit, Lava, Leaf, Lemon, Low poly, Marble, Mech, Mint, Monster, Neon, Pastel, Bubblegum, Pixel, Skeleton, Space, Terrazzo, Water, Wood.
+- 📏 **Stufenlose Größen- & Stabbreiten-Regelung:**
+  - **Zeigergröße (60 – 320 px):** Von dezent bis weithin sichtbar für große Hörsäle oder mobile Zuschauer.
+  - **Stabbreite (2 – 24 px):** Passe die Dicke des Zeigestabes an deine Bildschirmauflösung an. Die Breite bleibt in jeder Richtung und bei jeder Stablänge absolut konstant.
+  - **Schatten & 3D-Tiefe (0% – 100%):** Realistischer Drop-Shadow unter Hand und Stab für spürbare räumliche Tiefe über dem Web-Inhalt (oder flach bei 0%).
+- 🪄 **Vier Verankerungs-Modi für den Stab:**
+  - **Unten rechts (Ecke):** Stab ragt fest aus der unteren rechten Bildschirmecke heran (wie ein echter Referenten-Zeigestock).
+  - **Unten links (Ecke):** Stab ragt fest aus der linken unteren Ecke heran.
+  - **Dynamisch von unten:** Basis wandert am unteren Bildschirmrand direkt unter dem Cursor mit und neigt sich organisch in Bewegungsrichtung.
+  - **Frei schwebend (ohne langen Stab):** Hand ohne Stab – mit **stufenloser Zeiger-Neigung (-60° bis +60°)** sowie optionaler dynamischer Neigung.
+- 📐 **Exakte 90°-Rechtwinkligkeit zwischen Stab und Hand:**
+  - Der Stab tritt immer absolut senkrecht (90°) mittig in die Handmanschette ein – kein schiefes Bündchen oder krummes Aufsitzen mehr.
+  - Trotz Handdrehung bleibt die Fingerspitze dank iterativer Offset-Berechnung stets pixelgenau auf dem Mauszeiger.
+- 🫁 **Dezente Animationen getrennt steuerbar (0% – 200%):**
+  - **Bewegungs-Dynamik & Trägheit:** Regelbare Trägheits-Neigung (Inertia Tilt) und sanfte Federung beim Bewegen der Maus.
+  - **Atmen & Schweben im Stillstand:** Organisches, sanftes Heben und Atmen im Ruhezustand (beides separat dosierbar oder abschaltbar).
+- 🎯 **Eigene Zeiger hochladen & Klickpunkt kalibrieren:**
+  - Lade beliebige PNG- oder SVG-Bilder hoch.
+  - Kalibriere den Klickpunkt (z. B. Fingerspitze) interaktiv per Klick oder Ziehen des Fadenkreuzes direkt auf der Vorschau.
+- ✍️ **Verblassende Freihand-Tinte (Ephemeral Ink):**
+  - Zeichne mit gedrückter <kbd>Shift</kbd>-Taste freihändig Kreise, Pfeile oder Notizen auf jede Webseite.
+  - Linien blenden sich nach ca. 3 Sekunden sanft von selbst aus – die Folien bleiben stets aufgeräumt.
+  - 6 Farb-Presets oder individueller Color-Picker, Linienstärke und Verblassungsdauer anpassbar.
+- 💥 **Authentisches Klick-Feedback:**
+  - Beim normalen Klicken führt die Hand einen kurzen visuellen „Tap“ aus und an der Spitze pulsiert ein dezenter Ripple-Ring.
+- 🛡️ **Keine Störung des Arbeitsflusses:**
+  - Normale Klicks bedienen Links, Buttons und Eingabefelder völlig ungestört.
+  - Die <kbd>Escape</kbd>-Taste wird bewusst nicht abgefangen, damit Präsentations-Vollbildmodi stabil bleiben.
+  - Auf Wunsch wird der native Systemmauszeiger hinter der Hand verborgen.
+
+---
+
+## 🚀 Installation (macOS, Windows, Linux)
+
+Die Erweiterung funktioniert plattformunabhängig auf allen Betriebssystemen (**macOS**, **Windows**, **Linux**) in Google Chrome sowie allen Chromium-basierten Browsern (z. B. **Brave**, **Microsoft Edge**, **Vivaldi**, **Opera**).
+
+### Schritt 1: Projekt herunterladen
+
+**Option A – Mit Git (Empfohlen):**
+```bash
+git clone https://github.com/Schmitt-A/TinyHandChrome.git tinyhandChrome
+```
+
+**Option B – Als ZIP-Archiv:**
+1. Klicke oben auf GitHub auf den grünen Button **Code** ➔ **Download ZIP**.
+2. Entpacke die ZIP-Datei in einen beliebigen Ordner auf deinem Computer (z. B. in deinen `Dokumente`- oder `Projekte`-Ordner).
+
+---
+
+### Schritt 2: In Google Chrome laden
+
+1. Öffne Google Chrome (oder Brave, Edge, etc.).
+2. Gib in die Adresszeile ein:
    ```text
    chrome://extensions
    ```
-2. Aktiviere oben rechts den Schalter **„Entwicklermodus“** (Developer mode).
-3. Klicke oben links auf **„Entpackte Erweiterung laden“** (Load unpacked).
-4. Wähle diesen Projektordner aus:
-   ```text
-   /Users/andreasschmitt/Desktop/TinyHandChrome
-   ```
-5. Die Erweiterung ist sofort installiert! Klicke in der Chrome-Toolbar auf das **Puzzleteil-Icon** und pinne **TinyHand** an deine Toolbar.
+   *(in Microsoft Edge: `edge://extensions`)*
+3. Aktiviere oben rechts den Schalter **„Entwicklermodus“** (*Developer mode*).
+4. Klicke oben links auf **„Entpackte Erweiterung laden“** (*Load unpacked*).
+5. Wähle im Dateidialog den heruntergeladenen bzw. geklonten Projektordner `tinyhandChrome` aus (der Ordner, der die `manifest.json` enthält).
+6. **Fertig!** Klicke in der Chrome-Menüleiste auf das **Puzzleteil-Symbol** (Erweiterungen) und pinne **tinyhandChrome** für schnellen Zugriff an deine Toolbar.
+
+> [!TIP]
+> **Aktualisierung bei neuen Versionen:**  
+> Wenn du eine neue Version herunterlädst oder `git pull` ausführst, öffne einfach `chrome://extensions` und klicke bei tinyhandChrome auf das **Aktualisieren-Symbol (Kreispfeil)**.
 
 ---
 
-## Tastenkürzel (Shortcuts)
+## ⌨️ Tastenkürzel (Shortcuts)
 
-| Tastenkürzel (Mac) | Tastenkürzel (Win/Linux) | Funktion |
+| Tastenkürzel (macOS) | Tastenkürzel (Windows / Linux) | Aktion |
 | :--- | :--- | :--- |
-| <kbd>⌥ Option</kbd> + <kbd>H</kbd> | <kbd>Alt</kbd> + <kbd>H</kbd> | **TinyHand An / Aus** (Zeiger ein- oder ausblenden) |
-| <kbd>⌥ Option</kbd> + <kbd>C</kbd> | <kbd>Alt</kbd> + <kbd>C</kbd> | **Zeichnungen leeren** (Löscht sofort alle Linien) |
-| <kbd>⌥ Option</kbd> + <kbd>S</kbd> | <kbd>Alt</kbd> + <kbd>S</kbd> | **Zeigerstil wechseln** (Klassisch ➔ Laser ➔ Handschuh ➔ Pfote) |
-| <kbd>⇧ Shift</kbd> + **Maus ziehen** | <kbd>Shift</kbd> + **Maus ziehen** | **Freihand zeichnen** |
-| **Normaler Linksklick** | **Normaler Linksklick** | Webseite normal bedienen + Klick-Tap & Ripple-Effekt |
+| <kbd>⌥ Option</kbd> + <kbd>H</kbd> | <kbd>Alt</kbd> + <kbd>H</kbd> | **tinyhandChrome Ein / Aus** (Zeiger aktivieren oder verbergen) |
+| <kbd>⌥ Option</kbd> + <kbd>C</kbd> | <kbd>Alt</kbd> + <kbd>C</kbd> | **Zeichnungen leeren** (Löscht sofort alle Tintenstriche) |
+| <kbd>⌥ Option</kbd> + <kbd>S</kbd> | <kbd>Alt</kbd> + <kbd>S</kbd> | **Schnell-Stilwechsel** (wechselt durch die Favoriten) |
+| <kbd>⇧ Shift</kbd> + **Maus ziehen** | <kbd>Shift</kbd> + **Maus ziehen** | **Freihand zeichnen** (verblasst nach ca. 3s) |
+| **Normaler Linksklick** | **Normaler Linksklick** | Webseite normal bedienen + Klick-Tap & Ripple |
 
-### Tastenkombinationen anpassen:
-Du kannst die Tastenkürzel ganz nach deinen Wünschen ändern:
-- Öffne das **TinyHand-Popup** und klicke ganz unten auf den Button **„Tastenkombinationen anpassen ⚙️“**.
-- Alternativ kannst du direkt in Chrome `chrome://extensions/shortcuts` aufrufen.
-- Klicke auf das Stift-Symbol neben *TinyHand Zeiger ein-/ausschalten* und drücke deine bevorzugte Tastenkombination (z. B. `Ctrl+H`, `Alt+T` etc.).
-
-### Mauszeiger hinter der Hand verstecken:
-Standardmäßig wird der schwarze/weiße System-Mauszeiger ausgeblendet (`cursor: none`), sobald TinyHand aktiv ist, sodass **nur die Hand** sichtbar ist und als Cursor fungiert. Im Popup kannst du dieses Verhalten über das Häkchen *„Mauszeiger hinter Hand verstecken“* jederzeit anpassen.
+### Tastenkombinationen anpassen
+Möchtest du eigene Tastenkürzel (z. B. `Ctrl+H` oder `F8`) vergeben?
+1. Öffne das tinyhandChrome-Popup und klicke unten auf **„Tastenkombinationen anpassen ⚙️“**.
+2. Alternativ öffne direkt `chrome://extensions/shortcuts` in deinem Browser.
+3. Klicke auf das Stiftsymbol neben der gewünschten Aktion und drücke deine bevorzugte Tastenkombination.
 
 ---
 
-## Tipps für Präsentationen in BigBlueButton (BBB)
+## 📦 Releases & Versionsverlauf (Changelog)
 
-1. **Tab teilen:** Starte in BigBlueButton die Bildschirmfreigabe und wähle im Dialog den Reiter **„Chrome-Tab“** (statt Gesamter Bildschirm).
-2. **TinyHand aktivieren:** Drücke <kbd>Option</kbd> + <kbd>H</kbd> im geteilten Tab. Die Hand folgt nun deinem Mauszeiger.
-3. **Auf Dinge hinweisen:** Bewege die Hand auf Überschriften, Diagramme oder Codeblöcke.
-4. **Wichtiges hervorheben:** Halte <kbd>Shift</kbd> gedrückt und umkreise einen Bereich mit der Maus. Die rote Markierung ist für alle Konferenzteilnehmer sichtbar und verschwindet nach 3 Sekunden von selbst.
-5. **Präsentation beenden:** Nach dem Vortrag drückst du einfach erneut <kbd>Option</kbd> + <kbd>H</kbd>, um TinyHand wieder zu deaktivieren.
+### [v1.3.2] – 11. November 2026 *(Aktuelle Version)*
+- 📐 **Perfekt rechtwinklige Stab-Verbindung (90°):** Bei allen Zeigern (insbesondere *Plush*) tritt der Stab nun exakt senkrecht mittig in die Handmanschette ein – kein krummes Aufsitzen mehr bei schräger Fingerhaltung.
+- 📏 **Konstante Stabbreite:** Einheitliche, saubere Linienführung ohne Verzerrungen oder sichtbare Dicke-Änderungen bei unterschiedlichen Stablängen oder Drehungen.
+- 🎯 **Ecken-Verankerung wiederhergestellt:** „Unten rechts“ und „Unten links“ sind wieder stabil in den Ecken verankert und springen beim Umschalten im Popup sofort an die gewünschte Position.
+
+### [v1.3.1] – 11. November 2026
+- 🏷️ Versionsanzeige direkt im Popup-Kopfbereich integriert.
+- 🔄 Manifest V3 Versionsabgleich.
+
+### [v1.3.0] – 11. November 2026
+- 🎯 **Interaktive Klickpunkt-Kalibrierung (Hotspot Picker):** Fadenkreuz per Klick & Drag auf benutzerdefinierten Zeigergrafiken verschiebbar.
+- 📏 **Stabbreite frei einstellbar:** Neuer Schieberegler von 2 bis 24 px.
+- 🌓 **Schatten & 3D-Tiefe stufenlos regelbar:** Einstellbarer Drop-Shadow (0% bis 100%) für Hand und Stab.
+- 🪄 **Dynamischer Stab-Verlauf:** Neuer Verankerungsmodus, bei dem der Stabfuß horizontal mit dem Cursor mitwandert und sich neigt.
+- 🪶 **Frei schwebender Modus:** Einstellbare Neigung (-60° bis +60°) und dynamische Neigung nach Mausbewegung.
+- 🫁 **Separates Animations-Tuning:** Unabhängige Regler für Bewegungs-Trägheit und Ruhe-Atmung (0% – 200%).
+
+### [v1.2.2] – November 2026
+- 🪄 Durchgehender Zeigestab direkt in den Ärmel der Hand.
+- 🎯 100% exakte Fingerspitzen-Ausrichtung auf den Cursor.
+
+### [v1.2.0] – November 2026
+- 📏 Zeigergröße bis zu 320 px vergrößerbar.
+- 🫁 Dezente Atembewegung im Stillstand.
+- 📐 Stabverlauf wählbar (Unten rechts, Unten links, Dynamisch).
+
+### [v1.1.0] – November 2026
+- 🎨 Vollständige 1:1 Integration aller 36 authentischen Zeigerstile aus `nilbuild/tinyhand`.
+
+### [v1.0.0] – November 2026
+- 🎉 Initiales Release von TinyHand for Chrome.
+- ✍️ Verblassende Freihand-Tinte auf High-DPI Canvas.
+- 💥 Klick-Tap Animation und Leucht-Ripple.
+- 🛡️ Isoliertes Shadow DOM zum Schutz vor CSS-Konflikten.
 
 ---
 
-## Eigene Zeiger-Grafiken verwenden
+## 🎨 Eigene Zeigergrafiken verwenden
 
-Es gibt zwei einfache Wege, eigene Zeiger zu nutzen:
-
-### Methode 1: Direkt im Popup-Menü (Empfohlen)
-1. Klicke auf das TinyHand-Icon in der Chrome-Toolbar.
-2. Klicke in der Stil-Auswahl auf die Kachel **„Eigenes (+)”**.
-3. Wähle ein beliebiges PNG- oder SVG-Bild (z. B. mit transparentem Hintergrund) auf deiner Festplatte aus.
-4. **Klickpunkt kalibrieren:** Direkt unter der Kachel öffnet sich die interaktive Kalibrierung. Klicke oder ziehe das Fadenkreuz exakt auf die Fingerspitze oder Spitze deines Zeigers – TinyHand richtet den Klickpunkt sofort pixelgenau aus!
-5. Das Bild und der Klickpunkt sind sofort aktiv!
-
-### Methode 2: Im Ordner `hands/`
-1. Lege deine Datei (z. B. `mein-zeiger.svg` oder `mein-zeiger.png`) in den Ordner `hands/`.
-2. Sie steht der Erweiterung über `chrome.runtime.getURL("hands/mein-zeiger.png")` zur Verfügung.
+1. Klicke auf das **tinyhandChrome-Icon** in deiner Chrome-Menüleiste.
+2. Wähle die Kachel **„Eigenes (+)”**.
+3. Wähle ein beliebiges transparentes PNG- oder SVG-Bild von deiner Festplatte aus.
+4. **Klickpunkt kalibrieren:** Klicke oder ziehe im Kalibrierungsbereich das Fadenkreuz direkt auf die Spitze deines Zeigers.
+5. Der Zeiger ist sofort auf allen Webseiten aktiv und trifft pixelgenau!
 
 ---
 
-## Projektstruktur
+## 💡 Best Practices für Videokonferenzen
+
+1. **Konferenz starten:** Starte deinen Anruf in BigBlueButton, Google Meet, Zoom oder MS Teams.
+2. **Nur den Tab teilen:** Wähle bei der Bildschirmfreigabe den Reiter **„Chrome-Tab“** (schont Bandbreite und schützt private Benachrichtigungen auf deinem Desktop).
+3. **tinyhandChrome zuschalten:** Drücke <kbd>Alt</kbd> + <kbd>H</kbd> (Mac: <kbd>Option</kbd> + <kbd>H</kbd>) im geteilten Tab.
+4. **Auf Details hinweisen:** Bewege die Hand auf Codezeilen, Tabellen oder Diagramme.
+5. **Wichtiges hervorheben:** Halte <kbd>Shift</kbd> gedrückt und umkreise einen Begriff. Nach 3 Sekunden verschwindet die Markierung rückstandslos.
+6. **Beenden:** Ein erneutes <kbd>Alt</kbd> + <kbd>H</kbd> schaltet den Zeiger wieder unsichtbar.
+
+---
+
+## 📁 Projektstruktur
 
 ```text
-TinyHandChrome/
-├── manifest.json              # Manifest V3 Konfiguration
-├── background.js              # Service Worker (Shortcuts Alt+H, Alt+C, Alt+S, Badge)
+tinyhandChrome/
+├── manifest.json              # Chrome Manifest V3 Konfiguration
+├── background.js              # Service Worker (Tastenkürzel, Badge & State)
 ├── content/
-│   ├── content.js             # Hauptlogik: Shadow DOM, Canvas, Cursor-Tracking, 3s Fade-Loop
-│   └── overlay.css            # Isolierte Styles für Zeiger, Animationen und Canvas
+│   ├── content.js             # Hauptlogik: Shadow DOM, SVG-Stab, Canvas-Tinte, Physik-Loop
+│   └── overlay.css            # Isolierte Styles für Zeiger & Animationen
 ├── popup/
-│   ├── popup.html             # Einstellungs-Menü
-│   ├── popup.css              # Apple/macOS Design-Stile
-│   └── popup.js               # Event-Handling & Bild-Upload
-├── hands/                     # Mitgelieferte Zeiger (SVG & PNG)
-│   ├── hand-classic.svg       # Klassische Hand am Holzstab
-│   ├── hand-classic.png
-│   ├── laser-dot.svg          # Laserpointer mit Leucht-Halo
-│   ├── laser-dot.png
-│   ├── hand-glove.svg         # Weißer Cartoon-Handschuh
-│   ├── hand-glove.png
-│   ├── cat-paw.svg            # Niedliche Katzenpfote
-│   └── cat-paw.png
-├── icons/                     # Chrome Extension Icons
-│   ├── icon-16.png
-│   ├── icon-48.png
-│   └── icon-128.png
-├── tools/
-│   └── generate_assets.py     # Reproduzierbarer Generator für Icons & Hand-Grafiken
+│   ├── popup.html             # Benutzeroberfläche des Einstellungs-Menüs
+│   ├── popup.css              # Modernes macOS/Apple-inspiriertes Interface-Design
+│   └── popup.js               # Event-Handling, Speicherverwaltung & Hotspot-Kalibrierung
+├── hands/                     # Asset-Katalog: Alle 36 Hand-Grafiken (PNG & SVG)
+├── icons/                     # Erweiterungs-Icons (16px, 48px, 128px)
+├── tools/                     # Hilfsskripte & Asset-Generatoren
 └── README.md                  # Diese Dokumentation
 ```
 
 ---
 
-## Lizenz & Credits
+## 📄 Lizenz & Danksagung
 
-- Basiert auf der Idee von [TinyHand für macOS von nilbuild](https://github.com/nilbuild/tinyhand).
-- Entwickelt als eigenständige Chrome-Erweiterung für Web-Screen-Sharing.
+- **Idee & Zeiger-Assets:** Inspiriert vom herausragenden Open-Source-Projekt [TinyHand für macOS von nilbuild](https://github.com/nilbuild/tinyhand).
+- Entwickelt als eigenständige, plattformunabhängige Browser-Erweiterung für Web-Screen-Sharing auf **macOS**, **Windows** und **Linux**.
+- Veröffentlicht unter der [MIT License](LICENSE).

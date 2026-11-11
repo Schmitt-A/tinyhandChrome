@@ -1,0 +1,408 @@
+{
+  "styles": [
+    {
+      "id": "lavender",
+      "title": "Lavender toy",
+      "ink": "#8E5AF7",
+      "pinned": true
+    },
+    {
+      "id": "glove",
+      "title": "Cursor glove",
+      "ink": "#8E5AF7",
+      "pinned": true
+    },
+    {
+      "id": "coral",
+      "title": "Coral vinyl",
+      "ink": "#FF3B30",
+      "pinned": true
+    },
+    {
+      "id": "plush",
+      "title": "Plush",
+      "ink": "#2F86F0",
+      "pinned": true
+    },
+    {
+      "id": "robot",
+      "title": "Robot",
+      "ink": "#16A87A",
+      "pinned": true
+    },
+    {
+      "id": "laser",
+      "title": "Laser dot",
+      "ink": "#FF3B30",
+      "pinned": true
+    },
+    {
+      "id": "pink",
+      "title": "Bubblegum",
+      "ink": "#EE4F98",
+      "pinned": false
+    },
+    {
+      "id": "blue",
+      "title": "Sky",
+      "ink": "#2F86F0",
+      "pinned": false
+    },
+    {
+      "id": "mint",
+      "title": "Mint",
+      "ink": "#16A87A",
+      "pinned": false
+    },
+    {
+      "id": "lemon",
+      "title": "Lemon",
+      "ink": "#F2B705",
+      "pinned": false
+    },
+    {
+      "id": "black",
+      "title": "Midnight",
+      "ink": "#1D1D21",
+      "pinned": false
+    },
+    {
+      "id": "chrome",
+      "title": "Chrome",
+      "ink": "#6B7380",
+      "pinned": false
+    },
+    {
+      "id": "holo",
+      "title": "Holo",
+      "ink": "#8E5AF7",
+      "pinned": false
+    },
+    {
+      "id": "fuzzy",
+      "title": "Fuzzy",
+      "ink": "#8E5AF7",
+      "pinned": false
+    },
+    {
+      "id": "wood",
+      "title": "Wood",
+      "ink": "#9A5E2C",
+      "pinned": false
+    },
+    {
+      "id": "marble",
+      "title": "Marble",
+      "ink": "#6B7380",
+      "pinned": false
+    },
+    {
+      "id": "terrazzo",
+      "title": "Terrazzo",
+      "ink": "#F0561D",
+      "pinned": false
+    },
+    {
+      "id": "glass",
+      "title": "Glass",
+      "ink": "#1597E5",
+      "pinned": false
+    },
+    {
+      "id": "jelly",
+      "title": "Jelly",
+      "ink": "#A33FE6",
+      "pinned": false
+    },
+    {
+      "id": "pastel",
+      "title": "Pastel",
+      "ink": "#EE4F98",
+      "pinned": false
+    },
+    {
+      "id": "pixel",
+      "title": "Pixel",
+      "ink": "#1D1D21",
+      "pinned": false
+    },
+    {
+      "id": "lowpoly",
+      "title": "Low poly",
+      "ink": "#8E5AF7",
+      "pinned": false
+    },
+    {
+      "id": "knit",
+      "title": "Knit",
+      "ink": "#8E5AF7",
+      "pinned": false
+    },
+    {
+      "id": "skeleton",
+      "title": "Skeleton",
+      "ink": "#9A5E2C",
+      "pinned": false
+    },
+    {
+      "id": "astro",
+      "title": "Astronaut",
+      "ink": "#2F86F0",
+      "pinned": false
+    },
+    {
+      "id": "space",
+      "title": "Space",
+      "ink": "#FF3B30",
+      "pinned": false
+    },
+    {
+      "id": "monster",
+      "title": "Monster",
+      "ink": "#3E9E2E",
+      "pinned": false
+    },
+    {
+      "id": "water",
+      "title": "Water",
+      "ink": "#1597E5",
+      "pinned": false
+    },
+    {
+      "id": "lava",
+      "title": "Lava",
+      "ink": "#F0561D",
+      "pinned": false
+    },
+    {
+      "id": "grass",
+      "title": "Grass",
+      "ink": "#3E9E2E",
+      "pinned": false
+    },
+    {
+      "id": "cactus",
+      "title": "Cactus",
+      "ink": "#3E9E2E",
+      "pinned": false
+    },
+    {
+      "id": "choco",
+      "title": "Chocolate",
+      "ink": "#9A5E2C",
+      "pinned": false
+    },
+    {
+      "id": "cloud",
+      "title": "Cloud",
+      "ink": "#2F86F0",
+      "pinned": false
+    },
+    {
+      "id": "mech",
+      "title": "Mech",
+      "ink": "#F0561D",
+      "pinned": false
+    },
+    {
+      "id": "neon",
+      "title": "Neon",
+      "ink": "#E0309A",
+      "pinned": false
+    },
+    {
+      "id": "leaf",
+      "title": "Leaf",
+      "ink": "#3E9E2E",
+      "pinned": false
+    },
+    {
+      "id": "cookie",
+      "title": "Gingerbread",
+      "ink": "#9A5E2C",
+      "pinned": false
+    }
+  ],
+  "measurements": {
+    "lavender": {
+      "tipX": 0.4644,
+      "tipY": 0.0775,
+      "aspect": 0.6667
+    },
+    "glove": {
+      "tipX": 0.46,
+      "tipY": 0.0944,
+      "aspect": 0.6667
+    },
+    "coral": {
+      "tipX": 0.4131,
+      "tipY": 0.112,
+      "aspect": 0.6667
+    },
+    "plush": {
+      "tipX": 0.4409,
+      "tipY": 0.0931,
+      "aspect": 0.6667
+    },
+    "robot": {
+      "tipX": 0.3975,
+      "tipY": 0.1315,
+      "aspect": 0.6667
+    },
+    "pink": {
+      "tipX": 0.4629,
+      "tipY": 0.1126,
+      "aspect": 0.6667
+    },
+    "blue": {
+      "tipX": 0.46,
+      "tipY": 0.1159,
+      "aspect": 0.6667
+    },
+    "mint": {
+      "tipX": 0.4614,
+      "tipY": 0.0938,
+      "aspect": 0.6667
+    },
+    "lemon": {
+      "tipX": 0.4624,
+      "tipY": 0.0911,
+      "aspect": 0.6667
+    },
+    "black": {
+      "tipX": 0.4546,
+      "tipY": 0.112,
+      "aspect": 0.6667
+    },
+    "chrome": {
+      "tipX": 0.4575,
+      "tipY": 0.0944,
+      "aspect": 0.6667
+    },
+    "holo": {
+      "tipX": 0.4683,
+      "tipY": 0.0983,
+      "aspect": 0.6667
+    },
+    "fuzzy": {
+      "tipX": 0.4604,
+      "tipY": 0.0938,
+      "aspect": 0.6667
+    },
+    "wood": {
+      "tipX": 0.4585,
+      "tipY": 0.0911,
+      "aspect": 0.6667
+    },
+    "marble": {
+      "tipX": 0.4575,
+      "tipY": 0.0931,
+      "aspect": 0.6667
+    },
+    "terrazzo": {
+      "tipX": 0.4619,
+      "tipY": 0.1263,
+      "aspect": 0.6667
+    },
+    "glass": {
+      "tipX": 0.4609,
+      "tipY": 0.1276,
+      "aspect": 0.6667
+    },
+    "jelly": {
+      "tipX": 0.4678,
+      "tipY": 0.1198,
+      "aspect": 0.6667
+    },
+    "pastel": {
+      "tipX": 0.459,
+      "tipY": 0.0931,
+      "aspect": 0.6667
+    },
+    "pixel": {
+      "tipX": 0.4898,
+      "tipY": 0.127,
+      "aspect": 0.6667
+    },
+    "lowpoly": {
+      "tipX": 0.457,
+      "tipY": 0.0931,
+      "aspect": 0.6667
+    },
+    "knit": {
+      "tipX": 0.4731,
+      "tipY": 0.1139,
+      "aspect": 0.6667
+    },
+    "skeleton": {
+      "tipX": 0.459,
+      "tipY": 0.11,
+      "aspect": 0.6667
+    },
+    "astro": {
+      "tipX": 0.4614,
+      "tipY": 0.0892,
+      "aspect": 0.6667
+    },
+    "space": {
+      "tipX": 0.4585,
+      "tipY": 0.0905,
+      "aspect": 0.6667
+    },
+    "monster": {
+      "tipX": 0.4717,
+      "tipY": 0.1152,
+      "aspect": 0.6667
+    },
+    "water": {
+      "tipX": 0.4561,
+      "tipY": 0.1081,
+      "aspect": 0.6667
+    },
+    "lava": {
+      "tipX": 0.4585,
+      "tipY": 0.1048,
+      "aspect": 0.6667
+    },
+    "grass": {
+      "tipX": 0.4568,
+      "tipY": 0.1035,
+      "aspect": 0.6667
+    },
+    "cactus": {
+      "tipX": 0.4692,
+      "tipY": 0.1152,
+      "aspect": 0.6667
+    },
+    "choco": {
+      "tipX": 0.4702,
+      "tipY": 0.1152,
+      "aspect": 0.6667
+    },
+    "cloud": {
+      "tipX": 0.4517,
+      "tipY": 0.1302,
+      "aspect": 0.6667
+    },
+    "mech": {
+      "tipX": 0.396,
+      "tipY": 0.0977,
+      "aspect": 0.6667
+    },
+    "neon": {
+      "tipX": 0.4253,
+      "tipY": 0.0977,
+      "aspect": 0.6667
+    },
+    "leaf": {
+      "tipX": 0.4067,
+      "tipY": 0.0977,
+      "aspect": 0.6667
+    },
+    "cookie": {
+      "tipX": 0.4136,
+      "tipY": 0.0977,
+      "aspect": 0.6667
+    }
+  }
+}

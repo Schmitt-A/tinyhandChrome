@@ -11,9 +11,9 @@
   // Settings state
   let settings = {
     enabled: false,
-    style: "classic",
+    style: "lavender",
     size: 80,
-    color: "#FF3B30",
+    color: "#8E5AF7",
     strokeWidth: 4,
     fadeDuration: 3000,
     drawModifier: "shift",
@@ -39,16 +39,49 @@
   let canvasEl = null;
   let ctx = null;
   let pointerEl = null;
+  let innerEl = null;
   let imgEl = null;
   let toastEl = null;
   let toastTimeout = null;
 
-  // Asset paths
-  const STYLE_ASSETS = {
-    classic: chrome.runtime.getURL("hands/hand-classic.svg"),
-    laser: chrome.runtime.getURL("hands/laser-dot.svg"),
-    glove: chrome.runtime.getURL("hands/hand-glove.svg"),
-    paw: chrome.runtime.getURL("hands/cat-paw.svg")
+  // Exact fingertip measurements for all 36 authentic hands from nilbuild/tinyhand
+  const STYLE_MEASUREMENTS = {
+    "lavender": {"tipX": 0.4644, "tipY": 0.0775},
+    "glove": {"tipX": 0.46, "tipY": 0.0944},
+    "coral": {"tipX": 0.4131, "tipY": 0.112},
+    "plush": {"tipX": 0.4409, "tipY": 0.0931},
+    "robot": {"tipX": 0.3975, "tipY": 0.1315},
+    "pink": {"tipX": 0.4629, "tipY": 0.1126},
+    "blue": {"tipX": 0.46, "tipY": 0.1159},
+    "mint": {"tipX": 0.4614, "tipY": 0.0938},
+    "lemon": {"tipX": 0.4624, "tipY": 0.0911},
+    "black": {"tipX": 0.4546, "tipY": 0.112},
+    "chrome": {"tipX": 0.4575, "tipY": 0.0944},
+    "holo": {"tipX": 0.4683, "tipY": 0.0983},
+    "fuzzy": {"tipX": 0.4604, "tipY": 0.0938},
+    "wood": {"tipX": 0.4585, "tipY": 0.0911},
+    "marble": {"tipX": 0.4575, "tipY": 0.0931},
+    "terrazzo": {"tipX": 0.4619, "tipY": 0.1263},
+    "glass": {"tipX": 0.4609, "tipY": 0.1276},
+    "jelly": {"tipX": 0.4678, "tipY": 0.1198},
+    "pastel": {"tipX": 0.459, "tipY": 0.0931},
+    "pixel": {"tipX": 0.4898, "tipY": 0.127},
+    "lowpoly": {"tipX": 0.457, "tipY": 0.0931},
+    "knit": {"tipX": 0.4731, "tipY": 0.1139},
+    "skeleton": {"tipX": 0.459, "tipY": 0.11},
+    "astro": {"tipX": 0.4614, "tipY": 0.0892},
+    "space": {"tipX": 0.4585, "tipY": 0.0905},
+    "monster": {"tipX": 0.4717, "tipY": 0.1152},
+    "water": {"tipX": 0.4561, "tipY": 0.1081},
+    "lava": {"tipX": 0.4585, "tipY": 0.1048},
+    "grass": {"tipX": 0.4568, "tipY": 0.1035},
+    "cactus": {"tipX": 0.4692, "tipY": 0.1152},
+    "choco": {"tipX": 0.4702, "tipY": 0.1152},
+    "cloud": {"tipX": 0.4517, "tipY": 0.1302},
+    "mech": {"tipX": 0.396, "tipY": 0.0977},
+    "neon": {"tipX": 0.4253, "tipY": 0.0977},
+    "leaf": {"tipX": 0.4067, "tipY": 0.0977},
+    "cookie": {"tipX": 0.4136, "tipY": 0.0977}
   };
 
   // 1. Initialize DOM & Shadow DOM
@@ -80,25 +113,26 @@
       }
       #tinyhand-pointer {
         position: absolute; pointer-events: none !important;
-        will-change: transform, left, top;
-        transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.15s ease;
-        transform-origin: 0 0; display: none;
-        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+        will-change: left, top; display: none;
         z-index: 2147483647 !important;
+      }
+      #tinyhand-inner {
+        display: block; width: 100%; height: auto; pointer-events: none !important;
+        transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
       }
       #tinyhand-img {
         display: block; width: 100%; height: auto; pointer-events: none !important;
       }
-      .style-classic { transform: translate(-18%, -2%); }
-      .style-laser { transform: translate(-50%, -50%); filter: drop-shadow(0 0 12px rgba(255, 59, 48, 0.8)) !important; }
-      .style-glove { transform: translate(-50%, -3%); }
-      .style-paw { transform: translate(-50%, -6%); }
-      .style-custom { transform: translate(-20%, -5%); }
-      .tinyhand-tap.style-classic { transform: translate(-18%, -2%) scale(0.92) rotate(-8deg) !important; }
-      .tinyhand-tap.style-laser { transform: translate(-50%, -50%) scale(1.35) !important; }
-      .tinyhand-tap.style-glove { transform: translate(-50%, -3%) scale(0.9) rotate(-5deg) !important; }
-      .tinyhand-tap.style-paw { transform: translate(-50%, -6%) scale(0.88) translateY(4px) !important; }
-      .tinyhand-tap.style-custom { transform: translate(-20%, -5%) scale(0.9) !important; }
+      #tinyhand-inner.tinyhand-tap {
+        transform: scale(0.92) rotate(-7deg) !important;
+      }
+      .style-laser #tinyhand-inner {
+        filter: drop-shadow(0 0 14px rgba(255, 59, 48, 0.9)) !important;
+      }
+      .style-laser #tinyhand-inner.tinyhand-tap {
+        transform: scale(1.35) !important;
+      }
       .tinyhand-ripple {
         position: absolute; border-radius: 50%; pointer-events: none !important;
         transform: translate(-50%, -50%); box-sizing: border-box;
@@ -137,10 +171,14 @@
     pointerEl = document.createElement("div");
     pointerEl.id = "tinyhand-pointer";
 
+    innerEl = document.createElement("div");
+    innerEl.id = "tinyhand-inner";
+    pointerEl.appendChild(innerEl);
+
     imgEl = document.createElement("img");
     imgEl.id = "tinyhand-img";
     imgEl.draggable = false;
-    pointerEl.appendChild(imgEl);
+    innerEl.appendChild(imgEl);
 
     containerEl.appendChild(pointerEl);
 
@@ -198,7 +236,7 @@
   function updatePointerVisuals() {
     updateCursorVisibility();
 
-    if (!pointerEl || !imgEl) return;
+    if (!pointerEl || !imgEl || !innerEl) return;
 
     if (!settings.enabled) {
       pointerEl.style.display = "none";
@@ -215,29 +253,38 @@
     pointerEl.style.top = mouseY + "px";
     pointerEl.style.display = "block";
 
-    // Set Image Source
+    // Set Image Source & Hotspot Translation
     if (settings.style === "custom" && settings.customImage) {
       imgEl.src = settings.customImage;
+      pointerEl.style.transform = "translate(-20%, -5%)";
+      innerEl.style.transformOrigin = "20% 5%";
+    } else if (settings.style === "laser") {
+      imgEl.src = chrome.runtime.getURL("hands/laser-dot.svg");
+      pointerEl.style.transform = "translate(-50%, -50%)";
+      innerEl.style.transformOrigin = "50% 50%";
     } else {
-      imgEl.src = STYLE_ASSETS[settings.style] || STYLE_ASSETS.classic;
+      // 36 authentic hands from nilbuild/tinyhand
+      imgEl.src = chrome.runtime.getURL(`hands/hand_${settings.style}.png`);
+      const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.4644, tipY: 0.0775 };
+      pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%)`;
+      innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
     }
 
     // Set Size
     pointerEl.style.width = settings.size + "px";
 
-    // Set Class for Hotspot Alignment
-    pointerEl.className = "";
-    pointerEl.classList.add(`style-${settings.style}`);
+    // Set Class for Style-specific animations
+    pointerEl.className = `style-${settings.style}`;
   }
 
   // 4. Click Feedback (Tap Animation + Expanding Ripple)
   function triggerClickFeedback(x, y) {
-    if (!settings.enabled || !pointerEl) return;
+    if (!settings.enabled || !innerEl) return;
 
-    // A) Tap Animation on Pointer
-    pointerEl.classList.add("tinyhand-tap");
+    // A) Tap Animation on Pointer (pivoting at fingertip)
+    innerEl.classList.add("tinyhand-tap");
     setTimeout(() => {
-      pointerEl.classList.remove("tinyhand-tap");
+      innerEl.classList.remove("tinyhand-tap");
     }, 140);
 
     // B) Glowing Ripple at fingertip
@@ -247,7 +294,7 @@
     ripple.style.top = y + "px";
 
     // Ripple color matching drawing ink or vibrant red
-    const rippleColor = settings.color || "#FF3B30";
+    const rippleColor = settings.color || "#8E5AF7";
     ripple.style.borderColor = rippleColor;
     ripple.style.boxShadow = `0 0 10px ${rippleColor}`;
 

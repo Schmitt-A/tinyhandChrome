@@ -16,15 +16,13 @@ Die Erweiterung injiziert einen virtuellen Zeiger und eine transparente Zeichene
 
 ## Features
 
-- 👆 **4 mitgelieferte Zeigerstile:**
-  - **Klassische Hand am Holzstab** (TinyHand Signature Look)
-  - **Laserpointer** (Rot leuchtender Punkt mit Halo & Crosshair)
-  - **Cartoon-Handschuh** (Weißer Retro-Handschuh)
-  - **Katzenpfote** (Niedliche Pfote mit rosa Ballen)
+- 👆 **Alle 36 originalen Zeigerstile von nilbuild/tinyhand 1:1 integriert:**
+  - **Favoriten direkt als Kacheln:** Lavender toy (Standard), Cursor glove, Coral vinyl, Plush, Robot, Laser dot.
+  - **30 weitere Stile per Dropdown wählbar:** Astronaut, Midnight, Sky, Cactus, Chocolate, Chrome, Cloud, Gingerbread, Fuzzy, Glass, Grass, Holo, Jelly, Knit, Lava, Leaf, Lemon, Low poly, Marble, Mech, Mint, Monster, Neon, Pastel, Bubblegum, Pixel, Skeleton, Space, Terrazzo, Water, Wood.
 - 🖼️ **Eigene Zeiger:** Lade direkt im Popup-Menü beliebige eigene PNG- oder SVG-Grafiken (z. B. Maskottchen, Logo, Stift) hoch – sofort aktiv ohne Neuladen!
 - ✍️ **Verblassende Freihand-Tinte (Ephemeral Ink):** Gezeichnete Linien blenden sich nach ca. 3 Sekunden sanft von selbst aus. Deine Präsentationsfolien bleiben immer aufgeräumt.
 - 🎯 **Ungestörtes Webseiten-Surfen:** Normales Klicken bedient wie gewohnt Links, Buttons und Formulare. Mit gedrückter **`Shift`-Taste** schaltest du nahtlos auf Freihand-Zeichnen um.
-- 💥 **Klick-Feedback:** Beim Klicken führt die Hand einen kurzen visuellen „Tap“ aus und an der Fingerspitze pulsiert ein dezenter Ring – perfekt für Zuseher im Tab-Share.
+- 💥 **Authentisches Klick-Feedback:** Beim Klicken führt die Hand einen kurzen visuellen „Tap“ (Neigung an der Fingerspitze) aus und an der Fingerspitze pulsiert ein dezenter Ring – exakt wie im nativen macOS TinyHand.
 - ⚡ **Retina & High-DPI Support:** Glatte, gestochen scharfe Bézier-Kurven auf MacBook- und 4K-Displays.
 - 🛡️ **Keine Escape-Interception:** Die `Escape`-Taste wird bewusst nicht blockiert, damit der Vollbildmodus in BigBlueButton oder Google Slides stabil bleibt.
 

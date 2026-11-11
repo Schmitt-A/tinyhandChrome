@@ -14,7 +14,7 @@
         <img src="../icons/icon-48.png" alt="TinyHand" class="logo">
         <div>
           <h1>TinyHand</h1>
-          <span class="subtitle">Tab-Share Overlay • v1.0.1</span>
+          <span class="subtitle">Tab-Share Overlay • v1.1.0</span>
         </div>
       </div>
       <label class="switch" title="TinyHand ein-/ausschalten (Alt+H)">
@@ -28,21 +28,29 @@
       <section class="section">
         <label class="section-label">Zeiger-Stil <span class="badge">Alt+S</span></label>
         <div class="style-grid">
-          <button type="button" class="style-card" data-style="classic">
-            <img src="../hands/hand-classic.svg" alt="Klassisch">
-            <span>Klassisch</span>
+          <button type="button" class="style-card" data-style="lavender">
+            <img src="../hands/hand_lavender.png" alt="Lavender">
+            <span>Lavender</span>
+          </button>
+          <button type="button" class="style-card" data-style="glove">
+            <img src="../hands/hand_glove.png" alt="Glove">
+            <span>Glove</span>
+          </button>
+          <button type="button" class="style-card" data-style="coral">
+            <img src="../hands/hand_coral.png" alt="Coral">
+            <span>Coral</span>
+          </button>
+          <button type="button" class="style-card" data-style="plush">
+            <img src="../hands/hand_plush.png" alt="Plush">
+            <span>Plush</span>
+          </button>
+          <button type="button" class="style-card" data-style="robot">
+            <img src="../hands/hand_robot.png" alt="Robot">
+            <span>Robot</span>
           </button>
           <button type="button" class="style-card" data-style="laser">
             <img src="../hands/laser-dot.svg" alt="Laser">
             <span>Laser</span>
-          </button>
-          <button type="button" class="style-card" data-style="glove">
-            <img src="../hands/hand-glove.svg" alt="Handschuh">
-            <span>Handschuh</span>
-          </button>
-          <button type="button" class="style-card" data-style="paw">
-            <img src="../hands/cat-paw.svg" alt="Katzenpfote">
-            <span>Pfote</span>
           </button>
           <button type="button" class="style-card" data-style="custom" id="custom-style-btn">
             <div class="custom-icon-wrapper" id="custom-preview-wrapper">
@@ -51,6 +59,57 @@
             <span>Eigenes</span>
           </button>
         </div>
+
+        <div class="control-group all-styles-group" style="margin-top: 6px;">
+          <label for="select-all-styles">Alle 36 TinyHand Hände</label>
+          <select id="select-all-styles">
+            <optgroup label="🌟 Favoriten">
+              <option value="lavender" selected>Lavender toy (Standard)</option>
+              <option value="glove">Cursor glove</option>
+              <option value="coral">Coral vinyl</option>
+              <option value="plush">Plush</option>
+              <option value="robot">Robot</option>
+              <option value="laser">Laser dot</option>
+            </optgroup>
+            <optgroup label="✨ Weitere TinyHand Stile">
+              <option value="astro">Astronaut</option>
+              <option value="black">Midnight</option>
+              <option value="blue">Sky</option>
+              <option value="cactus">Cactus</option>
+              <option value="choco">Chocolate</option>
+              <option value="chrome">Chrome</option>
+              <option value="cloud">Cloud</option>
+              <option value="cookie">Gingerbread</option>
+              <option value="fuzzy">Fuzzy</option>
+              <option value="glass">Glass</option>
+              <option value="grass">Grass</option>
+              <option value="holo">Holo</option>
+              <option value="jelly">Jelly</option>
+              <option value="knit">Knit</option>
+              <option value="lava">Lava</option>
+              <option value="leaf">Leaf</option>
+              <option value="lemon">Lemon</option>
+              <option value="lowpoly">Low poly</option>
+              <option value="marble">Marble</option>
+              <option value="mech">Mech</option>
+              <option value="mint">Mint</option>
+              <option value="monster">Monster</option>
+              <option value="neon">Neon</option>
+              <option value="pastel">Pastel</option>
+              <option value="pink">Bubblegum</option>
+              <option value="pixel">Pixel</option>
+              <option value="skeleton">Skeleton</option>
+              <option value="space">Space</option>
+              <option value="terrazzo">Terrazzo</option>
+              <option value="water">Water</option>
+              <option value="wood">Wood</option>
+            </optgroup>
+            <optgroup label="📁 Eigene Datei">
+              <option value="custom">Eigenes Bild...</option>
+            </optgroup>
+          </select>
+        </div>
+
         <input type="file" id="custom-file-input" accept="image/png, image/svg+xml, image/jpeg, image/webp" style="display: none;">
         <div id="custom-actions" class="custom-actions" style="display: none;">
           <span class="custom-name" id="custom-status-text">Eigenes Bild aktiv</span>

@@ -5,9 +5,9 @@
 
 const DEFAULT_SETTINGS = {
   enabled: false,           // On-demand default
-  style: "classic",         // "classic" | "laser" | "glove" | "paw" | "custom"
+  style: "lavender",        // Authentic TinyHand signature default
   size: 80,                 // px
-  color: "#FF3B30",         // Default neon red
+  color: "#8E5AF7",         // Default purple matching Lavender hand
   strokeWidth: 4,           // px
   fadeDuration: 3000,       // 3 seconds auto-fade
   drawModifier: "shift",    // "shift" | "alt" | "always"
@@ -15,7 +15,8 @@ const DEFAULT_SETTINGS = {
   customImage: null         // Data URL if uploaded
 };
 
-const STYLES = ["classic", "laser", "glove", "paw"];
+// Pinned styles from nilbuild/tinyhand default toolbar
+const STYLES = ["lavender", "glove", "coral", "plush", "robot", "laser"];
 
 // Initialize settings on installation
 chrome.runtime.onInstalled.addListener(async () => {

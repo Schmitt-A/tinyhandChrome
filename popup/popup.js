@@ -20,13 +20,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const selectModifier = document.getElementById("select-modifier");
   const checkHideCursor = document.getElementById("check-hide-cursor");
   const btnConfigureShortcuts = document.getElementById("btn-configure-shortcuts");
+  const selectAllStyles = document.getElementById("select-all-styles");
 
   // Load current settings from storage
   const settings = await chrome.storage.local.get({
     enabled: false,
-    style: "classic",
+    style: "lavender",
     size: 80,
-    color: "#FF3B30",
+    color: "#8E5AF7",
     strokeWidth: 4,
     fadeDuration: 3000,
     drawModifier: "shift",
@@ -44,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       checkHideCursor.checked = state.hideNativeCursor !== false;
     }
 
-    // Style Selection
+    // Style Selection Cards
     styleCards.forEach((card) => {
       const cardStyle = card.getAttribute("data-style");
       if (cardStyle === state.style) {
@@ -53,6 +54,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         card.classList.remove("active");
       }
     });
+
+    // Dropdown Selection
+    if (selectAllStyles) {
+      selectAllStyles.value = state.style;
+    }
 
     // Custom Image Preview
     if (state.customImage) {
@@ -112,7 +118,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  // Dropdown style selection (all 36 authentic hands)
+  if (selectAllStyles) {
+    selectAllStyles.addEventListener("change", async () => {
+      const selected = selectAllStyles.value;
+      if (selected === "custom") {
+        const { customImage } = await chrome.storage.local.get("customImage");
+        if (!customImage) {
+          customFileInput.click();
+          return;
+        }
+      }
+      await chrome.storage.local.set({ style: selected });
+      updateActiveCard(selected);
+    });
+  }
+
   function updateActiveCard(activeStyle) {
+    if (selectAllStyles) {
+      selectAllStyles.value = activeStyle;
+    }
     styleCards.forEach((c) => {
       if (c.getAttribute("data-style") === activeStyle) {
         c.classList.add("active");

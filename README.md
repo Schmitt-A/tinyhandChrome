@@ -19,13 +19,6 @@ A tiny hand on a stick that points at things in your Chrome tabs during screen-s
 ### Live-Einsatz bei einer Tab-Präsentation (z. B. Google Meet oder BigBlueButton):
 <img src="./.github/screenshot-demo.png" alt="tinyhandChrome Live Demo im Browser" />
 
-### Einstellungen-Popup & Stile-Katalog:
-<p align="center">
-  <img src="./.github/screenshot-popup.png" width="360" alt="tinyhandChrome Popup Einstellungen" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="./.github/screenshot-styles.png" width="560" alt="Auswahl aus 36 Zeigerstilen" />
-</p>
-
 ---
 
 ## 📌 Über das Projekt (About)

@@ -2,7 +2,7 @@
 
 # tinyhandChrome
 
-[![Latest release](https://img.shields.io/badge/release-v1.3.2-blue.svg)](https://github.com/Schmitt-A/TinyHandChrome/releases)
+[![Latest release](https://img.shields.io/badge/release-v1.3.3-blue.svg)](https://github.com/Schmitt-A/TinyHandChrome/releases)
 [![Platform: Chrome / Chromium](https://img.shields.io/badge/platform-Chrome%20%7C%20Brave%20%7C%20Edge-lightgrey.svg)](https://github.com/Schmitt-A/TinyHandChrome)
 [![Manifest V3](https://img.shields.io/badge/manifest-v3-success.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -106,7 +106,8 @@ git clone https://github.com/Schmitt-A/TinyHandChrome.git tinyhandChrome
 
 | Version | Highlights |
 | :--- | :--- |
-| **[v1.3.2](https://github.com/Schmitt-A/TinyHandChrome/releases/tag/v1.3.2)** *(Aktuell)* | **Eigenständiges Design:** Neues eigenes Icon & Banner. **Perfekte 90°-Stabausrichtung:** Senkrechter Stabeintritt in die Handmanschette ohne krummes Aufsitzen. **Gleichmäßige Stabbreite** in jeder Richtung. **Stabile Ecken-Verankerung** („Unten rechts“ & „Unten links“) mit Sofort-Umschaltung. |
+| **[v1.3.3](https://github.com/Schmitt-A/TinyHandChrome/releases/tag/v1.3.3)** *(Aktuell)* | **Neues transparentes Zeiger-Icon:** Der echte 3D-Zeiger (Lavender) sitzt nun frei schwebend ohne Kasten direkt in der Toolbar, im Erweiterungs-Menü und im Popup-Header. Retina 32px Icon-Support & erzwungene Toolbar-Aktualisierung. |
+| **v1.3.2** | **Perfekte 90°-Stabausrichtung:** Senkrechter Stabeintritt in die Handmanschette ohne krummes Aufsitzen. **Gleichmäßige Stabbreite** in jeder Richtung. **Stabile Ecken-Verankerung** („Unten rechts“ & „Unten links“) mit Sofort-Umschaltung. |
 | **v1.3.0** | **Klickpunkt-Kalibrierung:** Fadenkreuz-Picker für eigene PNG/SVG-Zeiger. **Stabbreite & 3D-Tiefe:** Stufenlos regelbar (2–24 px / 0–100%). **Frei schwebender Modus** mit Neigungswinkel (-60° bis +60°). **Feintuning:** Separate Schieberegler für Bewegungsträgheit & Atmen. |
 | **v1.2.0** | Durchgehender Zeigestab direkt im Ärmel, stufenlose Zeigergröße (60–320 px), organische Atembewegung im Ruhezustand. |
 | **v1.1.0** | Integration aller 36 Zeigerstile (Lavender, Plush, Robot, Coral, Glove, Cactus, Wood, etc.). |

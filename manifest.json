@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "TinyHand for Chrome",
+  "name": "tinyhandChrome",
   "version": "1.3.3",
   "description": "Präsentations-Zeiger & verblassende Freihand-Zeichnungen für Chrome-Tab Bildschirmfreigaben (BigBlueButton, Google Meet, Zoom)",
   "icons": {
@@ -17,7 +17,7 @@
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     },
-    "default_title": "TinyHand Einstellungen"
+    "default_title": "tinyhandChrome Einstellungen"
   },
   "background": {
     "service_worker": "background.js"
@@ -35,7 +35,7 @@
         "default": "Alt+H",
         "mac": "Alt+H"
       },
-      "description": "TinyHand Zeiger ein-/ausschalten"
+      "description": "tinyhandChrome Zeiger ein-/ausschalten"
     },
     "clear-drawings": {
       "suggested_key": {

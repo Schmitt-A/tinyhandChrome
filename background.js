@@ -96,7 +96,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     if (tab?.id) {
       chrome.tabs.sendMessage(tab.id, {
         type: "TINYHAND_TOAST",
-        message: nextState ? "TinyHand: Aktiviert (Shift+Ziehen zum Zeichnen)" : "TinyHand: Deaktiviert"
+        message: nextState ? "tinyhandChrome: Aktiviert (Shift+Ziehen zum Zeichnen)" : "tinyhandChrome: Deaktiviert"
       }).catch(() => {});
     }
   } else if (command === "clear-drawings") {
@@ -115,7 +115,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     if (tab?.id) {
       chrome.tabs.sendMessage(tab.id, {
         type: "TINYHAND_TOAST",
-        message: `TinyHand Stil: ${nextStyle}`
+        message: `tinyhandChrome Stil: ${nextStyle}`
       }).catch(() => {});
     }
   }

@@ -104,27 +104,13 @@ git clone https://github.com/Schmitt-A/TinyHandChrome.git tinyhandChrome
 
 ## 📦 Releases & Versionsverlauf (Changelog)
 
-### [v1.3.2] – 11. November 2026 *(Aktuelle Version)*
-- 📐 **Perfekt rechtwinklige Stab-Verbindung (90°):** Exakte kollineare Ausrichtung zwischen Stab und Handmanschette.
-- 📏 **Gleichmäßige Stabbreite:** Einheitliche zylindrische 3D-Lichtführung ohne Verzerrungen bei Bewegung.
-- 🎯 **Ecken-Verankerung optimiert:** Sofortiges, verzögerungsfreies Umschalten zwischen Ecken und dynamischem Modus.
-- 🖼️ **Authentisches App-Icon:** Offizielles TinyHand-Icon in allen Auflösungen (16px, 48px, 128px) integriert.
-
-### [v1.3.0] – 11. November 2026
-- 🎯 Interaktive Klickpunkt-Kalibrierung für eigene Zeigergrafiken.
-- 📏 Einstellbare Stabbreite (2 – 24 px) und 3D-Schatten-Tiefe (0% – 100%).
-- 🪄 Dynamisch mitwandernder Stab & frei schwebender Modus mit Neigungswinkel.
-- 🫁 Separate Schieberegler für Bewegungsdynamik und Atmen im Stillstand.
-
-### [v1.2.0] – November 2026
-- 📏 Zeigergröße bis zu 320 px.
-- 🫁 Atembewegung im Ruhezustand und Verankerungs-Optionen.
-
-### [v1.1.0] – November 2026
-- 🎨 Vollständige 1:1 Integration aller 36 Original-Hände aus `nilbuild/tinyhand`.
-
-### [v1.0.0] – November 2026
-- 🎉 Initiales Release von TinyHand for Chrome mit High-DPI Canvas-Tinte, Klick-Tap und isoliertem Shadow DOM.
+| Version | Highlights |
+| :--- | :--- |
+| **[v1.3.2](https://github.com/Schmitt-A/TinyHandChrome/releases/tag/v1.3.2)** *(Aktuell)* | **Eigenständiges Design:** Neues eigenes Icon & Banner. **Perfekte 90°-Stabausrichtung:** Senkrechter Stabeintritt in die Handmanschette ohne krummes Aufsitzen. **Gleichmäßige Stabbreite** in jeder Richtung. **Stabile Ecken-Verankerung** („Unten rechts“ & „Unten links“) mit Sofort-Umschaltung. |
+| **v1.3.0** | **Klickpunkt-Kalibrierung:** Fadenkreuz-Picker für eigene PNG/SVG-Zeiger. **Stabbreite & 3D-Tiefe:** Stufenlos regelbar (2–24 px / 0–100%). **Frei schwebender Modus** mit Neigungswinkel (-60° bis +60°). **Feintuning:** Separate Schieberegler für Bewegungsträgheit & Atmen. |
+| **v1.2.0** | Durchgehender Zeigestab direkt im Ärmel, stufenlose Zeigergröße (60–320 px), organische Atembewegung im Ruhezustand. |
+| **v1.1.0** | Integration aller 36 Zeigerstile (Lavender, Plush, Robot, Coral, Glove, Cactus, Wood, etc.). |
+| **v1.0.0** | Erstveröffentlichung: Virtueller Zeiger & verblassende Freihand-Tinte im isolierten Shadow DOM für Tab-Screen-Sharing. |
 
 ---
 

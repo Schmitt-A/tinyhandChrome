@@ -9,9 +9,6 @@
 
 A tiny hand on a stick that points at things in your Chrome tabs during screen-sharing.  
 *(Ein winziger Zeigestock mit Hand, der bei Tab-Bildschirmfreigaben in Google Chrome auf Dinge zeigt.)*
-
-<img src="./.github/banner.jpg" alt="tinyhandChrome: a tiny hand for your browser" />
-
 ---
 
 ## 📸 Screenshots & Vorschau

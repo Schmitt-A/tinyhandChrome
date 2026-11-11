@@ -80,31 +80,47 @@ for item in TINYHAND_STYLES:
         im = Image.open(temp_raw_path).convert("RGBA")
         w, h = im.size
 
-        # Measure exact fingertip (top row and horizontal center of tip)
-        alpha = [im.getpixel((x, y))[3] for y in range(h) for x in range(w)]
-        tip_x, tip_y = 0.5, 0.08
+        # Measure top, fist, wrist as in nilbuild/tinyhand HandAsset.swift
+        counts = []
         for y in range(h):
-            row = [x for x in range(w) if alpha[y * w + x] > 128]
-            if row:
-                tip_y = round(y / h, 4)
-                tip_x = round(sum(row) / len(row) / w, 4)
-                break
+            c = sum(1 for x in range(w) if im.getpixel((x, y))[3] > 128)
+            counts.append(c)
+        top = next((y for y, c in enumerate(counts) if c > 0), 0)
+        searchEnd = min(h, top + int(0.45 * h))
+        maxW = max(counts[top:searchEnd])
+        fist = next((y for y in range(top, h) if counts[y] > 0.6 * maxW), 0)
+        wrist = next((y for y in range(fist, h) if counts[y] < 0.35 * maxW), 0)
+
+        # Crop to wrist so only the hand + cuff is kept (no baked-in stub rod)
+        cropped = im.crop((0, 0, w, wrist))
+        crop_w, crop_h = cropped.size
+
+        # Measure exact fingertip on cropped image
+        row_top = [x for x in range(crop_w) if cropped.getpixel((x, min(crop_h - 1, top + 2)))[3] > 128]
+        tip_x = round(sum(row_top) / len(row_top) / crop_w, 4) if row_top else 0.5
+        tip_y = round(top / crop_h, 4)
+
+        # Measure rod/cuff X at bottom
+        row_bottom = [x for x in range(crop_w) if cropped.getpixel((x, crop_h - 1))[3] > 128]
+        cuff_x = round(sum(row_bottom) / len(row_bottom) / crop_w, 4) if row_bottom else 0.5
+
+        aspect = round(crop_w / crop_h, 4)
 
         measurements[style_id] = {
             "tipX": tip_x,
             "tipY": tip_y,
-            "aspect": round(w / h, 4)
+            "cuffX": cuff_x,
+            "cuffY": 1.0,
+            "aspect": aspect,
+            "cropW": crop_w,
+            "cropH": crop_h
         }
 
-        # Resize to 600px height with high-quality Lanczos resampling
-        # 600px height is 4x to 8x resolution on screen (typically displayed at 80px)
-        target_h = 600
-        target_w = int(w * (target_h / h))
-        resized = im.resize((target_w, target_h), Image.Resampling.LANCZOS)
-        resized.save(target_path, "PNG", optimize=True)
+        # Save cropped image with high quality
+        cropped.save(target_path, "PNG", optimize=True)
 
         size_kb = os.path.getsize(target_path) / 1024
-        print(f"✓ {style_id}: saved {filename} ({target_w}x{target_h}, {size_kb:.1f} KB) - Tip: ({tip_x*100:.1f}%, {tip_y*100:.1f}%)")
+        print(f"✓ {style_id}: saved {filename} ({crop_w}x{crop_h}, {size_kb:.1f} KB) - Tip: ({tip_x*100:.1f}%, {tip_y*100:.1f}%)")
 
     except Exception as e:
         print(f"✗ Failed {style_id}: {e}")

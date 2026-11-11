@@ -46,47 +46,9 @@
   pointer-events: none !important;
 }
 
-/* Hotspot Offsets for each style */
-.style-classic {
-  transform: translate(-18%, -2%);
-}
-
-.style-laser {
-  transform: translate(-50%, -50%);
-  filter: drop-shadow(0 0 12px rgba(255, 59, 48, 0.8)) !important;
-}
-
-.style-glove {
-  transform: translate(-50%, -3%);
-}
-
-.style-paw {
-  transform: translate(-50%, -6%);
-}
-
-.style-custom {
-  transform: translate(-20%, -5%);
-}
-
-/* Click Tap Animation (the hand tilts/compresses downward slightly) */
-.tinyhand-tap.style-classic {
-  transform: translate(-18%, -2%) scale(0.92) rotate(-8deg) !important;
-}
-
-.tinyhand-tap.style-laser {
-  transform: translate(-50%, -50%) scale(1.35) !important;
-}
-
-.tinyhand-tap.style-glove {
-  transform: translate(-50%, -3%) scale(0.9) rotate(-5deg) !important;
-}
-
-.tinyhand-tap.style-paw {
-  transform: translate(-50%, -6%) scale(0.88) translateY(4px) !important;
-}
-
-.tinyhand-tap.style-custom {
-  transform: translate(-20%, -5%) scale(0.9) !important;
+/* Laser pointer glow */
+.style-laser #tinyhand-inner {
+  filter: drop-shadow(0 0 14px rgba(255, 59, 48, 0.95)) !important;
 }
 
 /* Click Ripple Ring */

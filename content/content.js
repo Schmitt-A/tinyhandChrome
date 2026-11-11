@@ -53,51 +53,51 @@
   let ctx = null;
   let armSvgEl = null;
   let rodEl = null;
-  let ferruleEl = null;
   let pointerEl = null;
   let innerEl = null;
   let imgEl = null;
   let toastEl = null;
   let toastTimeout = null;
 
-  // Exact fingertip measurements for all 36 authentic hands from nilbuild/tinyhand
+  // Exact fingertip and cuff measurements for all 36 authentic hands from nilbuild/tinyhand
   const STYLE_MEASUREMENTS = {
-    "lavender": {"tipX": 0.4644, "tipY": 0.0775},
-    "glove": {"tipX": 0.46, "tipY": 0.0944},
-    "coral": {"tipX": 0.4131, "tipY": 0.112},
-    "plush": {"tipX": 0.4409, "tipY": 0.0931},
-    "robot": {"tipX": 0.3975, "tipY": 0.1315},
-    "pink": {"tipX": 0.4629, "tipY": 0.1126},
-    "blue": {"tipX": 0.46, "tipY": 0.1159},
-    "mint": {"tipX": 0.4614, "tipY": 0.0938},
-    "lemon": {"tipX": 0.4624, "tipY": 0.0911},
-    "black": {"tipX": 0.4546, "tipY": 0.112},
-    "chrome": {"tipX": 0.4575, "tipY": 0.0944},
-    "holo": {"tipX": 0.4683, "tipY": 0.0983},
-    "fuzzy": {"tipX": 0.4604, "tipY": 0.0938},
-    "wood": {"tipX": 0.4585, "tipY": 0.0911},
-    "marble": {"tipX": 0.4575, "tipY": 0.0931},
-    "terrazzo": {"tipX": 0.4619, "tipY": 0.1263},
-    "glass": {"tipX": 0.4609, "tipY": 0.1276},
-    "jelly": {"tipX": 0.4678, "tipY": 0.1198},
-    "pastel": {"tipX": 0.459, "tipY": 0.0931},
-    "pixel": {"tipX": 0.4898, "tipY": 0.127},
-    "lowpoly": {"tipX": 0.457, "tipY": 0.0931},
-    "knit": {"tipX": 0.4731, "tipY": 0.1139},
-    "skeleton": {"tipX": 0.459, "tipY": 0.11},
-    "astro": {"tipX": 0.4614, "tipY": 0.0892},
-    "space": {"tipX": 0.4585, "tipY": 0.0905},
-    "monster": {"tipX": 0.4717, "tipY": 0.1152},
-    "water": {"tipX": 0.4561, "tipY": 0.1081},
-    "lava": {"tipX": 0.4585, "tipY": 0.1048},
-    "grass": {"tipX": 0.4568, "tipY": 0.1035},
-    "cactus": {"tipX": 0.4692, "tipY": 0.1152},
-    "choco": {"tipX": 0.4702, "tipY": 0.1152},
-    "cloud": {"tipX": 0.4517, "tipY": 0.1302},
-    "mech": {"tipX": 0.396, "tipY": 0.0977},
-    "neon": {"tipX": 0.4253, "tipY": 0.0977},
-    "leaf": {"tipX": 0.4067, "tipY": 0.0977},
-    "cookie": {"tipX": 0.4136, "tipY": 0.0977}
+    "lavender": {"tipX": 0.4637, "tipY": 0.1754, "cuffX": 0.5125, "cuffY": 1.0, "aspect": 1.4925},
+    "glove": {"tipX": 0.46, "tipY": 0.2103, "cuffX": 0.5138, "cuffY": 1.0, "aspect": 1.476},
+    "coral": {"tipX": 0.4125, "tipY": 0.2241, "cuffX": 0.5225, "cuffY": 1.0, "aspect": 1.3378},
+    "plush": {"tipX": 0.44, "tipY": 0.1879, "cuffX": 0.54, "cuffY": 1.0, "aspect": 1.3423},
+    "robot": {"tipX": 0.3962, "tipY": 0.2599, "cuffX": 0.5, "cuffY": 1.0, "aspect": 1.3158},
+    "pink": {"tipX": 0.4612, "tipY": 0.2429, "cuffX": 0.5188, "cuffY": 1.0, "aspect": 1.4286},
+    "blue": {"tipX": 0.4587, "tipY": 0.2473, "cuffX": 0.5125, "cuffY": 1.0, "aspect": 1.4134},
+    "mint": {"tipX": 0.4612, "tipY": 0.2066, "cuffX": 0.5125, "cuffY": 1.0, "aspect": 1.476},
+    "lemon": {"tipX": 0.4612, "tipY": 0.2045, "cuffX": 0.5162, "cuffY": 1.0, "aspect": 1.487},
+    "black": {"tipX": 0.4537, "tipY": 0.2376, "cuffX": 0.52, "cuffY": 1.0, "aspect": 1.4184},
+    "chrome": {"tipX": 0.4562, "tipY": 0.2096, "cuffX": 0.515, "cuffY": 1.0, "aspect": 1.4706},
+    "holo": {"tipX": 0.4688, "tipY": 0.2193, "cuffX": 0.5225, "cuffY": 1.0, "aspect": 1.487},
+    "fuzzy": {"tipX": 0.4612, "tipY": 0.2059, "cuffX": 0.5238, "cuffY": 1.0, "aspect": 1.4706},
+    "wood": {"tipX": 0.46, "tipY": 0.203, "cuffX": 0.5112, "cuffY": 1.0, "aspect": 1.476},
+    "marble": {"tipX": 0.4575, "tipY": 0.209, "cuffX": 0.5175, "cuffY": 1.0, "aspect": 1.4925},
+    "terrazzo": {"tipX": 0.4612, "tipY": 0.2648, "cuffX": 0.5212, "cuffY": 1.0, "aspect": 1.3937},
+    "glass": {"tipX": 0.4587, "tipY": 0.2711, "cuffX": 0.5238, "cuffY": 1.0, "aspect": 1.4085},
+    "jelly": {"tipX": 0.4662, "tipY": 0.2581, "cuffX": 0.52, "cuffY": 1.0, "aspect": 1.4337},
+    "pastel": {"tipX": 0.4587, "tipY": 0.2066, "cuffX": 0.5138, "cuffY": 1.0, "aspect": 1.476},
+    "pixel": {"tipX": 0.4888, "tipY": 0.2492, "cuffX": 0.5387, "cuffY": 1.0, "aspect": 1.3115},
+    "lowpoly": {"tipX": 0.4562, "tipY": 0.2066, "cuffX": 0.5125, "cuffY": 1.0, "aspect": 1.476},
+    "knit": {"tipX": 0.4713, "tipY": 0.2437, "cuffX": 0.5238, "cuffY": 1.0, "aspect": 1.4337},
+    "skeleton": {"tipX": 0.4587, "tipY": 0.2548, "cuffX": 0.51, "cuffY": 1.0, "aspect": 1.5444},
+    "astro": {"tipX": 0.46, "tipY": 0.1964, "cuffX": 0.5175, "cuffY": 1.0, "aspect": 1.4545},
+    "space": {"tipX": 0.4575, "tipY": 0.2, "cuffX": 0.5275, "cuffY": 1.0, "aspect": 1.4815},
+    "monster": {"tipX": 0.4688, "tipY": 0.23, "cuffX": 0.5238, "cuffY": 1.0, "aspect": 1.3333},
+    "water": {"tipX": 0.4562, "tipY": 0.2381, "cuffX": 0.5112, "cuffY": 1.0, "aspect": 1.4652},
+    "lava": {"tipX": 0.4575, "tipY": 0.2316, "cuffX": 0.5162, "cuffY": 1.0, "aspect": 1.4706},
+    "grass": {"tipX": 0.4625, "tipY": 0.2175, "cuffX": 0.5199, "cuffY": 1.0, "aspect": 1.4035},
+    "cactus": {"tipX": 0.4675, "tipY": 0.2482, "cuffX": 0.5188, "cuffY": 1.0, "aspect": 1.4388},
+    "choco": {"tipX": 0.4688, "tipY": 0.2447, "cuffX": 0.5225, "cuffY": 1.0, "aspect": 1.4184},
+    "cloud": {"tipX": 0.4562, "tipY": 0.2662, "cuffX": 0.5126, "cuffY": 1.0, "aspect": 1.3652},
+    "mech": {"tipX": 0.395, "tipY": 0.213, "cuffX": 0.4975, "cuffY": 1.0, "aspect": 1.444},
+    "neon": {"tipX": 0.4238, "tipY": 0.2138, "cuffX": 0.495, "cuffY": 1.0, "aspect": 1.4493},
+    "leaf": {"tipX": 0.405, "tipY": 0.213, "cuffX": 0.4975, "cuffY": 1.0, "aspect": 1.444},
+    "cookie": {"tipX": 0.4125, "tipY": 0.213, "cuffX": 0.4988, "cuffY": 1.0, "aspect": 1.444},
+    "laser": {"tipX": 0.5, "tipY": 0.5, "cuffX": 0.5, "cuffY": 0.5, "aspect": 1.0}
   };
 
   // 1. Initialize DOM & Shadow DOM
@@ -198,12 +198,10 @@
         </linearGradient>
       </defs>
       <line id="tinyhand-rod" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-carbon)" stroke-width="7" stroke-linecap="round" filter="url(#rod-shadow)" />
-      <circle id="tinyhand-ferrule" cx="0" cy="0" r="5" fill="#D4AF37" stroke="#8C7320" stroke-width="1.5" filter="url(#rod-shadow)" />
     `;
     containerEl.appendChild(armSvgEl);
 
     rodEl = armSvgEl.querySelector("#tinyhand-rod");
-    ferruleEl = armSvgEl.querySelector("#tinyhand-ferrule");
 
     // Canvas for drawing
     canvasEl = document.createElement("canvas");
@@ -286,7 +284,6 @@
     if (!settings.enabled) {
       pointerEl.style.display = "none";
       if (rodEl) rodEl.style.display = "none";
-      if (ferruleEl) ferruleEl.style.display = "none";
       return;
     }
 
@@ -418,26 +415,25 @@
       if (settings.style === "laser") {
         // Laser dot pointer
         if (rodEl) rodEl.style.display = "none";
-        if (ferruleEl) ferruleEl.style.display = "none";
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = mouseY + "px";
+        pointerEl.style.transformOrigin = "50% 50%";
         pointerEl.style.transform = "translate(-50%, -50%)";
         const laserScale = (1 + pressAmount * 0.35) * (1 + Math.min(0.2, currentSpeed * 0.008));
         innerEl.style.transform = `scale(${laserScale})`;
       } else if (settings.stickOrigin === "floating") {
         // Free-floating pointer without stick to screen edge
         if (rodEl) rodEl.style.display = "none";
-        if (ferruleEl) ferruleEl.style.display = "none";
-        const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.4644, tipY: 0.0775 };
+        const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.46, tipY: 0.21, cuffX: 0.51, cuffY: 1.0, aspect: 1.47 };
+        pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = tipYTarget + "px";
         pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalExtraAngle}deg)`;
         innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 8 + motionAngle * 0.3}deg)`;
       } else {
-        // Stick mode: stick extending from corner / bottom to hand!
+        // Stick mode: single continuous stick extending from corner / bottom directly into hand cuff!
         if (rodEl) rodEl.style.display = "block";
-        if (ferruleEl) ferruleEl.style.display = "block";
 
         const dx = mouseX - currentBaseX;
         const dy = tipYTarget - currentBaseY;
@@ -445,34 +441,39 @@
         const aimDeg = (aimAngle * 180) / Math.PI + 90;
         const totalRot = aimDeg + totalExtraAngle;
 
-        const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.4644, tipY: 0.0775 };
+        const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.46, tipY: 0.21, cuffX: 0.51, cuffY: 1.0, aspect: 1.47 };
+        pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = tipYTarget + "px";
         pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRot}deg)`;
         innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 4 + motionAngle * 0.3}deg)`;
 
-        // Calculate wrist connection point along the stick with dynamic rotation offset
-        const extraAngleRad = (totalExtraAngle * Math.PI) / 180;
-        const wristOffset = settings.size * 1.5 * 0.27 + motionLag;
-        const wristX = mouseX - Math.cos(aimAngle + extraAngleRad) * wristOffset;
-        const wristY = tipYTarget - Math.sin(aimAngle + extraAngleRad) * wristOffset;
+        // Calculate exact screen coordinates of the cuff opening where the rod enters
+        const handH = settings.size / (m.aspect || 1.4);
+        const localDx = (m.cuffX - m.tipX) * settings.size;
+        const localDy = (m.cuffY - m.tipY) * handH + motionLag;
+        const theta = (totalRot * Math.PI) / 180;
+        const rotDx = localDx * Math.cos(theta) - localDy * Math.sin(theta);
+        const rotDy = localDx * Math.sin(theta) + localDy * Math.cos(theta);
+
+        const cuffScreenX = mouseX + rotDx;
+        const cuffScreenY = tipYTarget + rotDy;
+
+        // Push 6px into the cuff so the rod seamlessly tucks behind the hand cuff
+        const rodAngle = Math.atan2(cuffScreenY - currentBaseY, cuffScreenX - currentBaseX);
+        const rodEndX = cuffScreenX + Math.cos(rodAngle) * 6;
+        const rodEndY = cuffScreenY + Math.sin(rodAngle) * 6;
 
         if (rodEl) {
           rodEl.setAttribute("x1", currentBaseX);
           rodEl.setAttribute("y1", currentBaseY);
-          rodEl.setAttribute("x2", wristX);
-          rodEl.setAttribute("y2", wristY);
+          rodEl.setAttribute("x2", rodEndX);
+          rodEl.setAttribute("y2", rodEndY);
 
-          const rodW = Math.max(5, Math.round(settings.size * 0.042));
+          const rodW = Math.max(5, Math.round(settings.size * 0.045));
           rodEl.setAttribute("stroke-width", rodW);
           rodEl.setAttribute("stroke", settings.style === "wood" ? "url(#rod-grad-wood)" : "url(#rod-grad-carbon)");
-
-          if (ferruleEl) {
-            ferruleEl.setAttribute("cx", wristX);
-            ferruleEl.setAttribute("cy", wristY);
-            ferruleEl.setAttribute("r", Math.round(rodW * 0.65));
-          }
         }
       }
     }
@@ -615,7 +616,6 @@
     isMouseInside = false;
     if (pointerEl) pointerEl.style.display = "none";
     if (rodEl) rodEl.style.display = "none";
-    if (ferruleEl) ferruleEl.style.display = "none";
     if (drawing) {
       drawing = false;
       currentStroke = null;

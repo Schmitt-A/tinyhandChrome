@@ -225,184 +225,335 @@
   ],
   "measurements": {
     "lavender": {
-      "tipX": 0.4644,
-      "tipY": 0.0775,
-      "aspect": 0.6667
+      "tipX": 0.4637,
+      "tipY": 0.1754,
+      "cuffX": 0.5125,
+      "cuffY": 1.0,
+      "aspect": 1.4925,
+      "cropW": 400,
+      "cropH": 268
     },
     "glove": {
       "tipX": 0.46,
-      "tipY": 0.0944,
-      "aspect": 0.6667
+      "tipY": 0.2103,
+      "cuffX": 0.5138,
+      "cuffY": 1.0,
+      "aspect": 1.476,
+      "cropW": 400,
+      "cropH": 271
     },
     "coral": {
-      "tipX": 0.4131,
-      "tipY": 0.112,
-      "aspect": 0.6667
+      "tipX": 0.4125,
+      "tipY": 0.2241,
+      "cuffX": 0.5225,
+      "cuffY": 1.0,
+      "aspect": 1.3378,
+      "cropW": 400,
+      "cropH": 299
     },
     "plush": {
-      "tipX": 0.4409,
-      "tipY": 0.0931,
-      "aspect": 0.6667
+      "tipX": 0.44,
+      "tipY": 0.1879,
+      "cuffX": 0.54,
+      "cuffY": 1.0,
+      "aspect": 1.3423,
+      "cropW": 400,
+      "cropH": 298
     },
     "robot": {
-      "tipX": 0.3975,
-      "tipY": 0.1315,
-      "aspect": 0.6667
+      "tipX": 0.3962,
+      "tipY": 0.2599,
+      "cuffX": 0.5,
+      "cuffY": 1.0,
+      "aspect": 1.3158,
+      "cropW": 400,
+      "cropH": 304
     },
     "pink": {
-      "tipX": 0.4629,
-      "tipY": 0.1126,
-      "aspect": 0.6667
+      "tipX": 0.4612,
+      "tipY": 0.2429,
+      "cuffX": 0.5188,
+      "cuffY": 1.0,
+      "aspect": 1.4286,
+      "cropW": 400,
+      "cropH": 280
     },
     "blue": {
-      "tipX": 0.46,
-      "tipY": 0.1159,
-      "aspect": 0.6667
+      "tipX": 0.4587,
+      "tipY": 0.2473,
+      "cuffX": 0.5125,
+      "cuffY": 1.0,
+      "aspect": 1.4134,
+      "cropW": 400,
+      "cropH": 283
     },
     "mint": {
-      "tipX": 0.4614,
-      "tipY": 0.0938,
-      "aspect": 0.6667
+      "tipX": 0.4612,
+      "tipY": 0.2066,
+      "cuffX": 0.5125,
+      "cuffY": 1.0,
+      "aspect": 1.476,
+      "cropW": 400,
+      "cropH": 271
     },
     "lemon": {
-      "tipX": 0.4624,
-      "tipY": 0.0911,
-      "aspect": 0.6667
+      "tipX": 0.4612,
+      "tipY": 0.2045,
+      "cuffX": 0.5162,
+      "cuffY": 1.0,
+      "aspect": 1.487,
+      "cropW": 400,
+      "cropH": 269
     },
     "black": {
-      "tipX": 0.4546,
-      "tipY": 0.112,
-      "aspect": 0.6667
+      "tipX": 0.4537,
+      "tipY": 0.2376,
+      "cuffX": 0.52,
+      "cuffY": 1.0,
+      "aspect": 1.4184,
+      "cropW": 400,
+      "cropH": 282
     },
     "chrome": {
-      "tipX": 0.4575,
-      "tipY": 0.0944,
-      "aspect": 0.6667
+      "tipX": 0.4562,
+      "tipY": 0.2096,
+      "cuffX": 0.515,
+      "cuffY": 1.0,
+      "aspect": 1.4706,
+      "cropW": 400,
+      "cropH": 272
     },
     "holo": {
-      "tipX": 0.4683,
-      "tipY": 0.0983,
-      "aspect": 0.6667
+      "tipX": 0.4688,
+      "tipY": 0.2193,
+      "cuffX": 0.5225,
+      "cuffY": 1.0,
+      "aspect": 1.487,
+      "cropW": 400,
+      "cropH": 269
     },
     "fuzzy": {
-      "tipX": 0.4604,
-      "tipY": 0.0938,
-      "aspect": 0.6667
+      "tipX": 0.4612,
+      "tipY": 0.2059,
+      "cuffX": 0.5238,
+      "cuffY": 1.0,
+      "aspect": 1.4706,
+      "cropW": 400,
+      "cropH": 272
     },
     "wood": {
-      "tipX": 0.4585,
-      "tipY": 0.0911,
-      "aspect": 0.6667
+      "tipX": 0.46,
+      "tipY": 0.203,
+      "cuffX": 0.5112,
+      "cuffY": 1.0,
+      "aspect": 1.476,
+      "cropW": 400,
+      "cropH": 271
     },
     "marble": {
       "tipX": 0.4575,
-      "tipY": 0.0931,
-      "aspect": 0.6667
+      "tipY": 0.209,
+      "cuffX": 0.5175,
+      "cuffY": 1.0,
+      "aspect": 1.4925,
+      "cropW": 400,
+      "cropH": 268
     },
     "terrazzo": {
-      "tipX": 0.4619,
-      "tipY": 0.1263,
-      "aspect": 0.6667
+      "tipX": 0.4612,
+      "tipY": 0.2648,
+      "cuffX": 0.5212,
+      "cuffY": 1.0,
+      "aspect": 1.3937,
+      "cropW": 400,
+      "cropH": 287
     },
     "glass": {
-      "tipX": 0.4609,
-      "tipY": 0.1276,
-      "aspect": 0.6667
+      "tipX": 0.4587,
+      "tipY": 0.2711,
+      "cuffX": 0.5238,
+      "cuffY": 1.0,
+      "aspect": 1.4085,
+      "cropW": 400,
+      "cropH": 284
     },
     "jelly": {
-      "tipX": 0.4678,
-      "tipY": 0.1198,
-      "aspect": 0.6667
+      "tipX": 0.4662,
+      "tipY": 0.2581,
+      "cuffX": 0.52,
+      "cuffY": 1.0,
+      "aspect": 1.4337,
+      "cropW": 400,
+      "cropH": 279
     },
     "pastel": {
-      "tipX": 0.459,
-      "tipY": 0.0931,
-      "aspect": 0.6667
+      "tipX": 0.4587,
+      "tipY": 0.2066,
+      "cuffX": 0.5138,
+      "cuffY": 1.0,
+      "aspect": 1.476,
+      "cropW": 400,
+      "cropH": 271
     },
     "pixel": {
-      "tipX": 0.4898,
-      "tipY": 0.127,
-      "aspect": 0.6667
+      "tipX": 0.4888,
+      "tipY": 0.2492,
+      "cuffX": 0.5387,
+      "cuffY": 1.0,
+      "aspect": 1.3115,
+      "cropW": 400,
+      "cropH": 305
     },
     "lowpoly": {
-      "tipX": 0.457,
-      "tipY": 0.0931,
-      "aspect": 0.6667
+      "tipX": 0.4562,
+      "tipY": 0.2066,
+      "cuffX": 0.5125,
+      "cuffY": 1.0,
+      "aspect": 1.476,
+      "cropW": 400,
+      "cropH": 271
     },
     "knit": {
-      "tipX": 0.4731,
-      "tipY": 0.1139,
-      "aspect": 0.6667
+      "tipX": 0.4713,
+      "tipY": 0.2437,
+      "cuffX": 0.5238,
+      "cuffY": 1.0,
+      "aspect": 1.4337,
+      "cropW": 400,
+      "cropH": 279
     },
     "skeleton": {
-      "tipX": 0.459,
-      "tipY": 0.11,
-      "aspect": 0.6667
+      "tipX": 0.4587,
+      "tipY": 0.2548,
+      "cuffX": 0.51,
+      "cuffY": 1.0,
+      "aspect": 1.5444,
+      "cropW": 400,
+      "cropH": 259
     },
     "astro": {
-      "tipX": 0.4614,
-      "tipY": 0.0892,
-      "aspect": 0.6667
+      "tipX": 0.46,
+      "tipY": 0.1964,
+      "cuffX": 0.5175,
+      "cuffY": 1.0,
+      "aspect": 1.4545,
+      "cropW": 400,
+      "cropH": 275
     },
     "space": {
-      "tipX": 0.4585,
-      "tipY": 0.0905,
-      "aspect": 0.6667
+      "tipX": 0.4575,
+      "tipY": 0.2,
+      "cuffX": 0.5275,
+      "cuffY": 1.0,
+      "aspect": 1.4815,
+      "cropW": 400,
+      "cropH": 270
     },
     "monster": {
-      "tipX": 0.4717,
-      "tipY": 0.1152,
-      "aspect": 0.6667
+      "tipX": 0.4688,
+      "tipY": 0.23,
+      "cuffX": 0.5238,
+      "cuffY": 1.0,
+      "aspect": 1.3333,
+      "cropW": 400,
+      "cropH": 300
     },
     "water": {
-      "tipX": 0.4561,
-      "tipY": 0.1081,
-      "aspect": 0.6667
+      "tipX": 0.4562,
+      "tipY": 0.2381,
+      "cuffX": 0.5112,
+      "cuffY": 1.0,
+      "aspect": 1.4652,
+      "cropW": 400,
+      "cropH": 273
     },
     "lava": {
-      "tipX": 0.4585,
-      "tipY": 0.1048,
-      "aspect": 0.6667
+      "tipX": 0.4575,
+      "tipY": 0.2316,
+      "cuffX": 0.5162,
+      "cuffY": 1.0,
+      "aspect": 1.4706,
+      "cropW": 400,
+      "cropH": 272
     },
     "grass": {
-      "tipX": 0.4568,
-      "tipY": 0.1035,
-      "aspect": 0.6667
+      "tipX": 0.4625,
+      "tipY": 0.2175,
+      "cuffX": 0.5199,
+      "cuffY": 1.0,
+      "aspect": 1.4035,
+      "cropW": 400,
+      "cropH": 285
     },
     "cactus": {
-      "tipX": 0.4692,
-      "tipY": 0.1152,
-      "aspect": 0.6667
+      "tipX": 0.4675,
+      "tipY": 0.2482,
+      "cuffX": 0.5188,
+      "cuffY": 1.0,
+      "aspect": 1.4388,
+      "cropW": 400,
+      "cropH": 278
     },
     "choco": {
-      "tipX": 0.4702,
-      "tipY": 0.1152,
-      "aspect": 0.6667
+      "tipX": 0.4688,
+      "tipY": 0.2447,
+      "cuffX": 0.5225,
+      "cuffY": 1.0,
+      "aspect": 1.4184,
+      "cropW": 400,
+      "cropH": 282
     },
     "cloud": {
-      "tipX": 0.4517,
-      "tipY": 0.1302,
-      "aspect": 0.6667
+      "tipX": 0.4562,
+      "tipY": 0.2662,
+      "cuffX": 0.5126,
+      "cuffY": 1.0,
+      "aspect": 1.3652,
+      "cropW": 400,
+      "cropH": 293
     },
     "mech": {
-      "tipX": 0.396,
-      "tipY": 0.0977,
-      "aspect": 0.6667
+      "tipX": 0.395,
+      "tipY": 0.213,
+      "cuffX": 0.4975,
+      "cuffY": 1.0,
+      "aspect": 1.444,
+      "cropW": 400,
+      "cropH": 277
     },
     "neon": {
-      "tipX": 0.4253,
-      "tipY": 0.0977,
-      "aspect": 0.6667
+      "tipX": 0.4238,
+      "tipY": 0.2138,
+      "cuffX": 0.495,
+      "cuffY": 1.0,
+      "aspect": 1.4493,
+      "cropW": 400,
+      "cropH": 276
     },
     "leaf": {
-      "tipX": 0.4067,
-      "tipY": 0.0977,
-      "aspect": 0.6667
+      "tipX": 0.405,
+      "tipY": 0.213,
+      "cuffX": 0.4975,
+      "cuffY": 1.0,
+      "aspect": 1.444,
+      "cropW": 400,
+      "cropH": 277
     },
     "cookie": {
-      "tipX": 0.4136,
-      "tipY": 0.0977,
-      "aspect": 0.6667
+      "tipX": 0.4125,
+      "tipY": 0.213,
+      "cuffX": 0.4988,
+      "cuffY": 1.0,
+      "aspect": 1.444,
+      "cropW": 400,
+      "cropH": 277
+    },
+    "laser": {
+      "tipX": 0.5,
+      "tipY": 0.5,
+      "cuffX": 0.5,
+      "cuffY": 0.5,
+      "aspect": 1.0
     }
   }
 }

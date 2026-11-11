@@ -503,34 +503,30 @@
 
     if (settings.stickOrigin === "bottom-right") {
       // Wandert entlang des unteren Bildschirmrands mit (rechtsseitig orientiert)
-      targetBaseX = w * 0.55 + (mouseX / w) * (w * 0.42);
+      targetBaseX = w * 0.60 + (mouseX / w) * (w * 0.35);
       targetBaseY = h + 20;
     } else if (settings.stickOrigin === "bottom-left") {
       // Wandert entlang des unteren Bildschirmrands mit (linksseitig orientiert)
-      targetBaseX = w * 0.03 + (mouseX / w) * (w * 0.42);
+      targetBaseX = w * 0.05 + (mouseX / w) * (w * 0.35);
       targetBaseY = h + 20;
     } else if (settings.stickOrigin === "dynamic") {
       // Dynamisch von unten:
-      // - In der Bildschirmmitte zeigt der Stab gerade nach oben (Basis exakt unter Cursor)
-      // - Wandert die Maus nach rechts/links, wandert die Basis mit und neigt sich leicht schräg
-      const centerOffset = mouseX - w * 0.5;
-      targetBaseX = mouseX - centerOffset * 0.35;
+      // Der Stab folgt dem Cursor von unten direkt mit.
+      // Basis bleibt stabil unter dem Cursor mit nur minimalem, sanftem Neigungseffekt (max ~3° an den Rändern)
+      const normX = Math.min(1, Math.max(0, mouseX / (w || 1)));
+      const subtleTilt = (normX - 0.5) * Math.min(60, w * 0.05);
+      targetBaseX = mouseX - subtleTilt;
       targetBaseY = h + 20;
-    }
-
-    // Dynamic base flex during horizontal motion
-    if (motionFactor > 0 && settings.stickOrigin !== "floating") {
-      const baseFlex = Math.max(-28, Math.min(28, -smoothedVx * 0.16)) * motionFactor;
-      targetBaseX += baseFlex;
     }
 
     if (currentBaseX < 0 || currentBaseY < 0) {
       currentBaseX = targetBaseX;
       currentBaseY = targetBaseY;
     } else {
-      // Fluid spring interpolation for base
-      currentBaseX += (targetBaseX - currentBaseX) * 0.09;
-      currentBaseY += (targetBaseY - currentBaseY) * 0.09;
+      // Schnelle, stabile Verfolgung: Verhindert unnatürliches Hinterherhinken und Rotieren beim Bewegen
+      const followSpeed = settings.stickOrigin === "dynamic" ? 0.35 : 0.25;
+      currentBaseX += (targetBaseX - currentBaseX) * followSpeed;
+      currentBaseY += (targetBaseY - currentBaseY) * followSpeed;
     }
 
     // B) Idle Breathing & Movement Animation ("Dezente Animation im Stillstand & beim Bewegen")
@@ -636,11 +632,7 @@
         const rodAngle = Math.atan2(dy, dx);
 
         // Collinear lock: aligns hand cuff-to-tip axis directly with the rod vector!
-        const baseRotDeg = ((rodAngle - handAxisAngle) * 180) / Math.PI;
-
-        // Subtle structural elasticity (max ±0.4 deg, never disjointed or wobbling off the cuff)
-        const subtleFlex = Math.max(-0.4, Math.min(0.4, -smoothedVx * 0.02)) * motionFactor;
-        const totalRot = baseRotDeg + subtleFlex;
+        const totalRot = ((rodAngle - handAxisAngle) * 180) / Math.PI;
 
         pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         pointerEl.style.left = mouseX + "px";

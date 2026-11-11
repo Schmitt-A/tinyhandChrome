@@ -25,7 +25,7 @@ Die Erweiterung injiziert einen virtuellen Zeiger und eine transparente Zeichene
   - **Unten links (Ecke):** Für Linkshänder oder linke Bildschirmbereiche.
   - **Dynamisch von unten:** Der Stab folgt sanft gefedert von der unteren Bildschirmkante.
   - **Frei schwebend:** Nur die Hand ohne verlängerten Stab.
-- 🫁 **Dezente Atembewegung & Klick-Physik:** Authentische Mikrobewegungen (subtile Schwingung im Stillstand) und sanfte Federung (Spring Damping) beim Bewegen und Klicken – wie in der nativen macOS-App.
+- 🫁 **Dezente Animation beim Bewegen & im Stillstand:** Organische Trägheits-Neigung (Inertia Tilt bis ±3,5°), geschmeidige Bewegungs-Federung und sanftes Atmen im Stillstand – für ein lebendiges, natürliches Präsentationsgefühl wie in der nativen macOS-App.
 - 🖼️ **Eigene Zeiger:** Lade direkt im Popup-Menü beliebige eigene PNG- oder SVG-Grafiken (z. B. Maskottchen, Logo, Stift) hoch – sofort aktiv ohne Neuladen!
 - ✍️ **Verblassende Freihand-Tinte (Ephemeral Ink):** Gezeichnete Linien blenden sich nach ca. 3 Sekunden sanft von selbst aus. Deine Präsentationsfolien bleiben immer aufgeräumt.
 - 🎯 **Ungestörtes Webseiten-Surfen:** Normales Klicken bedient wie gewohnt Links, Buttons und Formulare. Mit gedrückter **`Shift`-Taste** schaltest du nahtlos auf Freihand-Zeichnen um.

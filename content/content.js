@@ -32,6 +32,12 @@
   // Physics & Animation state
   let mouseX = -9999;
   let mouseY = -9999;
+  let prevFrameX = -9999;
+  let prevFrameY = -9999;
+  let smoothedVx = 0;
+  let smoothedVy = 0;
+  let inertiaAngle = 0;
+  let movePhase = 0;
   let isMouseInside = false;
   let currentBaseX = -1;
   let currentBaseY = -1;
@@ -132,7 +138,7 @@
       }
       #tinyhand-inner {
         display: block; width: 100%; height: auto; pointer-events: none !important;
-        transition: transform 0.08s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        will-change: transform;
         filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.38));
       }
       #tinyhand-img {
@@ -324,6 +330,20 @@
     const w = window.innerWidth;
     const h = window.innerHeight;
 
+    // Track frame velocity for smooth movement animation
+    if (prevFrameX < 0 || prevFrameY < 0) {
+      prevFrameX = mouseX;
+      prevFrameY = mouseY;
+    }
+    const rawVx = mouseX - prevFrameX;
+    const rawVy = mouseY - prevFrameY;
+    prevFrameX = mouseX;
+    prevFrameY = mouseY;
+
+    smoothedVx += (rawVx - smoothedVx) * 0.28;
+    smoothedVy += (rawVy - smoothedVy) * 0.28;
+    const currentSpeed = Math.hypot(smoothedVx, smoothedVy);
+
     // A) Calculate Target Base Point for the Stick
     let targetBaseX = w * 0.95;
     let targetBaseY = h + 20;
@@ -337,6 +357,12 @@
       targetBaseY = h + 20;
     }
 
+    // Dynamic base flex during movement for corner modes (elastic rod effect)
+    if (settings.stickOrigin !== "dynamic" && settings.idleAnimation) {
+      const baseFlex = Math.max(-20, Math.min(20, -smoothedVx * 0.14));
+      targetBaseX += baseFlex;
+    }
+
     if (currentBaseX < 0 || currentBaseY < 0) {
       currentBaseX = targetBaseX;
       currentBaseY = targetBaseY;
@@ -346,13 +372,36 @@
       currentBaseY += (targetBaseY - currentBaseY) * 0.08;
     }
 
-    // B) Idle Breathing Sway Animation ("Dezente Animation im Stillstand")
+    // B) Idle Breathing & Movement Animation ("Dezente Animation im Stillstand & beim Bewegen")
     let swayAngle = 0;
     let breatheLift = 0;
+    let moveTilt = 0;
+    let moveLift = 0;
+    let motionLag = 0;
+
     if (settings.idleAnimation) {
+      // 1. Idle Breathing: dominant when still, smoothly yields when in motion
       idlePhase += 0.035;
-      swayAngle = Math.sin(idlePhase) * 0.75; // 0.75 deg gentle rocking
-      breatheLift = Math.cos(idlePhase * 0.7) * 1.5; // 1.5px subtle float
+      const idleWeight = Math.max(0, 1 - currentSpeed * 0.25); // 1.0 when still, 0 when moving
+      swayAngle = Math.sin(idlePhase) * (0.75 * idleWeight); // 0.75 deg gentle rocking
+      breatheLift = Math.cos(idlePhase * 0.7) * (1.5 * idleWeight); // 1.5px subtle float
+
+      // 2. Movement Inertia Tilt (subtle rotational lag trailing mouse movement)
+      // Max ±3.5 degrees so it's always subtle and non-distracting
+      const targetInertia = Math.max(-3.5, Math.min(3.5, -smoothedVx * 0.14));
+      inertiaAngle += (targetInertia - inertiaAngle) * 0.20;
+
+      // 3. Movement Sway / Bobbing & Lift (subtle organic motion rhythm)
+      if (currentSpeed > 0.4) {
+        movePhase += Math.min(currentSpeed * 0.04, 0.22);
+      }
+      moveTilt = Math.sin(movePhase) * Math.min(currentSpeed * 0.05, 1.2);
+      moveLift = Math.cos(movePhase * 0.8) * Math.min(currentSpeed * 0.04, 1.5);
+
+      // 4. Subtle elastic stretch along the stick (1-3.5px)
+      motionLag = Math.min(3.5, currentSpeed * 0.06);
+    } else {
+      inertiaAngle = 0;
     }
 
     // C) Click Tap Spring Damping
@@ -362,7 +411,9 @@
 
     // D) Position Hand and Stick
     if (pointerEl && imgEl && innerEl) {
-      const tipYTarget = mouseY + breatheLift;
+      const tipYTarget = mouseY + breatheLift + moveLift;
+      const motionAngle = inertiaAngle + moveTilt;
+      const totalExtraAngle = swayAngle + motionAngle;
 
       if (settings.style === "laser") {
         // Laser dot pointer
@@ -371,7 +422,8 @@
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = mouseY + "px";
         pointerEl.style.transform = "translate(-50%, -50%)";
-        innerEl.style.transform = `scale(${1 + pressAmount * 0.35})`;
+        const laserScale = (1 + pressAmount * 0.35) * (1 + Math.min(0.2, currentSpeed * 0.008));
+        innerEl.style.transform = `scale(${laserScale})`;
       } else if (settings.stickOrigin === "floating") {
         // Free-floating pointer without stick to screen edge
         if (rodEl) rodEl.style.display = "none";
@@ -379,9 +431,9 @@
         const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.4644, tipY: 0.0775 };
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = tipYTarget + "px";
-        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${swayAngle}deg)`;
+        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalExtraAngle}deg)`;
         innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
-        innerEl.style.transform = `scale(${pressScale}) rotate(${-pressAmount * 8}deg)`;
+        innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 8 + motionAngle * 0.3}deg)`;
       } else {
         // Stick mode: stick extending from corner / bottom to hand!
         if (rodEl) rodEl.style.display = "block";
@@ -391,19 +443,20 @@
         const dy = tipYTarget - currentBaseY;
         const aimAngle = Math.atan2(dy, dx); // radians
         const aimDeg = (aimAngle * 180) / Math.PI + 90;
-        const totalRot = aimDeg + swayAngle;
+        const totalRot = aimDeg + totalExtraAngle;
 
         const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.4644, tipY: 0.0775 };
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = tipYTarget + "px";
         pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRot}deg)`;
         innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
-        innerEl.style.transform = `translate(0, ${pressDip}px) scale(${pressScale}) rotate(${-pressAmount * 4}deg)`;
+        innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 4 + motionAngle * 0.3}deg)`;
 
-        // Calculate wrist connection point along the stick
-        const wristOffset = settings.size * 1.5 * 0.27;
-        const wristX = mouseX - Math.cos(aimAngle) * wristOffset;
-        const wristY = tipYTarget - Math.sin(aimAngle) * wristOffset;
+        // Calculate wrist connection point along the stick with dynamic rotation offset
+        const extraAngleRad = (totalExtraAngle * Math.PI) / 180;
+        const wristOffset = settings.size * 1.5 * 0.27 + motionLag;
+        const wristX = mouseX - Math.cos(aimAngle + extraAngleRad) * wristOffset;
+        const wristY = tipYTarget - Math.sin(aimAngle + extraAngleRad) * wristOffset;
 
         if (rodEl) {
           rodEl.setAttribute("x1", currentBaseX);
@@ -574,6 +627,10 @@
     isMouseInside = true;
     mouseX = e.clientX;
     mouseY = e.clientY;
+    prevFrameX = e.clientX;
+    prevFrameY = e.clientY;
+    smoothedVx = 0;
+    smoothedVy = 0;
     if (settings.enabled) {
       if (pointerEl) pointerEl.style.display = "block";
       startMainLoop();

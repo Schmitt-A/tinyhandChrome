@@ -34,7 +34,6 @@
   position: absolute;
   pointer-events: none !important;
   will-change: transform, left, top;
-  transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.15s ease;
   transform-origin: 0 0;
   display: none;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));

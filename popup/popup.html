@@ -14,7 +14,7 @@
         <img src="../icons/icon-48.png" alt="TinyHand" class="logo">
         <div>
           <h1>TinyHand</h1>
-          <span class="subtitle">Tab-Share Overlay • v1.2.2</span>
+          <span class="subtitle">Tab-Share Overlay • v1.3.0</span>
         </div>
       </div>
       <label class="switch" title="TinyHand ein-/ausschalten (Alt+H)">
@@ -115,15 +115,43 @@
           <span class="custom-name" id="custom-status-text">Eigenes Bild aktiv</span>
           <button type="button" class="btn-text danger" id="btn-remove-custom">Entfernen</button>
         </div>
+
+        <!-- Hotspot Calibration Card -->
+        <div id="custom-hotspot-container" class="custom-hotspot-container" style="display: none;">
+          <div class="section-header">
+            <span class="section-label">Klickpunkt (Fingerspitze)</span>
+            <span class="value-display" id="hotspot-coords-text">X: 50% • Y: 20%</span>
+          </div>
+          <div class="calibration-box" id="calibration-box">
+            <div class="calibration-target-wrapper" id="calibration-area" title="Klicke oder ziehe auf den Klickpunkt">
+              <img id="calibration-img" src="" alt="Vorschau Hand">
+              <div id="calibration-crosshair" class="calibration-crosshair">
+                <div class="crosshair-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="calibration-footer">
+            <span class="calibration-hint">Klicke auf das Bild, um den Klickpunkt zu kalibrieren.</span>
+            <button type="button" class="btn-text" id="btn-reset-hotspot">Standard</button>
+          </div>
+        </div>
       </section>
 
-      <!-- Section: Zeiger-Größe -->
+      <!-- Section: Zeiger-Größe & Stabbreite -->
       <section class="section">
         <div class="section-header">
           <label class="section-label" for="range-size">Zeigergröße</label>
           <span class="value-display" id="size-display">160 px</span>
         </div>
         <input type="range" id="range-size" min="60" max="320" step="5" value="160">
+
+        <div class="control-group" id="rod-width-group" style="margin-top: 6px;">
+          <div class="section-header">
+            <label class="section-label" for="range-rod-width">Stabbreite</label>
+            <span class="value-display" id="rod-width-display">7 px</span>
+          </div>
+          <input type="range" id="range-rod-width" min="2" max="24" step="1" value="7">
+        </div>
 
         <div class="checkbox-row">
           <label class="checkbox-label" for="check-hide-cursor">
@@ -135,19 +163,54 @@
 
       <!-- Section: Stab-Verlauf & Animation -->
       <section class="section">
-        <label class="section-label" for="select-stick-origin">Stab-Verlauf (Bildschirmecke)</label>
+        <label class="section-label" for="select-stick-origin">Stab-Verlauf (Verankerung)</label>
         <select id="select-stick-origin">
-          <option value="bottom-right" selected>Unten rechts (Ecke) • Standard</option>
-          <option value="bottom-left">Unten links (Ecke)</option>
-          <option value="dynamic">Dynamisch von unten (folgt Cursor)</option>
+          <option value="bottom-right" selected>Unten rechts (wandert am Rand mit) • Standard</option>
+          <option value="bottom-left">Unten links (wandert am Rand mit)</option>
+          <option value="dynamic">Dynamisch von unten (folgt Cursor &amp; neigt sich)</option>
           <option value="floating">Frei schwebend (ohne langen Stab)</option>
         </select>
 
+        <!-- Sub-options for floating mode -->
+        <div id="floating-options" class="sub-controls-card" style="display: none; margin-top: 6px;">
+          <div class="section-header">
+            <label class="section-label" for="range-floating-angle">Zeiger-Neigung</label>
+            <span class="value-display" id="floating-angle-display">-15°</span>
+          </div>
+          <input type="range" id="range-floating-angle" min="-60" max="60" step="1" value="-15">
+
+          <div class="checkbox-row" style="margin-top: 4px;">
+            <label class="checkbox-label" for="check-floating-dynamic">
+              <input type="checkbox" id="check-floating-dynamic" checked>
+              <span>Dynamisch neigen (folgt Bewegung &amp; Position)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Master toggle & individual sliders for subtle animations -->
         <div class="checkbox-row" style="margin-top: 6px;">
           <label class="checkbox-label" for="check-idle-animation">
             <input type="checkbox" id="check-idle-animation" checked>
-            <span>Dezente Animation (beim Bewegen & Atmen im Stillstand)</span>
+            <span>Dezente Animationen aktivieren</span>
           </label>
+        </div>
+
+        <div id="anim-sliders-group" class="sub-controls-card" style="margin-top: 6px;">
+          <div class="control-group">
+            <div class="section-header">
+              <label class="section-label" for="range-anim-motion">Bewegungs-Dynamik &amp; Trägheit</label>
+              <span class="value-display" id="anim-motion-display">100%</span>
+            </div>
+            <input type="range" id="range-anim-motion" min="0" max="200" step="5" value="100">
+          </div>
+
+          <div class="control-group" style="margin-top: 4px;">
+            <div class="section-header">
+              <label class="section-label" for="range-anim-breathe">Atmen &amp; Schweben im Stillstand</label>
+              <span class="value-display" id="anim-breathe-display">100%</span>
+            </div>
+            <input type="range" id="range-anim-breathe" min="0" max="200" step="5" value="100">
+          </div>
         </div>
       </section>
 

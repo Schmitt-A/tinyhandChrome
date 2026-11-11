@@ -7,14 +7,21 @@ const DEFAULT_SETTINGS = {
   enabled: false,           // On-demand default
   style: "lavender",        // Authentic TinyHand signature default
   size: 160,                // px (authentic prominent TinyHand size)
+  rodWidth: 7,              // px (width of pointer rod)
   color: "#8E5AF7",         // Default purple matching Lavender hand
   strokeWidth: 4,           // px
   fadeDuration: 3000,       // 3 seconds auto-fade
   drawModifier: "shift",    // "shift" | "alt" | "always"
   hideNativeCursor: true,   // Hide standard mouse cursor behind hand
   stickOrigin: "bottom-right", // "bottom-right" | "bottom-left" | "dynamic" | "floating"
-  idleAnimation: true,      // Subtle breathing animation
-  customImage: null         // Data URL if uploaded
+  floatingAngle: -15,       // deg (tilt angle for floating mode)
+  floatingDynamic: true,    // dynamically tilt floating hand according to movement & position
+  idleAnimation: true,      // Master switch for animations
+  animMotionStrength: 100,  // % (movement inertia & tilt strength)
+  animBreatheStrength: 100, // % (idle breathing & float strength)
+  customImage: null,        // Data URL if uploaded
+  customHotspot: { x: 0.5, y: 0.2 }, // Relative hotspot (0..1)
+  customAspect: 1.4         // Aspect ratio width/height
 };
 
 // Pinned styles from nilbuild/tinyhand default toolbar

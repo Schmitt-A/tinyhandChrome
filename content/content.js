@@ -14,14 +14,21 @@
     enabled: false,
     style: "lavender",
     size: 160,
+    rodWidth: 7,
     color: "#8E5AF7",
     strokeWidth: 4,
     fadeDuration: 3000,
     drawModifier: "shift",
     hideNativeCursor: true,
     stickOrigin: "bottom-right",
+    floatingAngle: -15,
+    floatingDynamic: true,
     idleAnimation: true,
-    customImage: null
+    animMotionStrength: 100,
+    animBreatheStrength: 100,
+    customImage: null,
+    customHotspot: { x: 0.5, y: 0.2 },
+    customAspect: 1.4
   };
 
   // Drawing state
@@ -99,6 +106,19 @@
     "cookie": {"tipX": 0.4125, "tipY": 0.213, "cuffX": 0.4988, "cuffY": 1.0, "aspect": 1.444},
     "laser": {"tipX": 0.5, "tipY": 0.5, "cuffX": 0.5, "cuffY": 0.5, "aspect": 1.0}
   };
+
+  function getStyleMeasurements() {
+    if (settings.style === "custom") {
+      return {
+        tipX: settings.customHotspot?.x ?? 0.5,
+        tipY: settings.customHotspot?.y ?? 0.2,
+        cuffX: 0.5,
+        cuffY: 1.0,
+        aspect: settings.customAspect ?? 1.4
+      };
+    }
+    return STYLE_MEASUREMENTS[settings.style] || { tipX: 0.46, tipY: 0.21, cuffX: 0.51, cuffY: 1.0, aspect: 1.47 };
+  }
 
   // 1. Initialize DOM & Shadow DOM
   function initDOM() {
@@ -341,22 +361,33 @@
     smoothedVy += (rawVy - smoothedVy) * 0.28;
     const currentSpeed = Math.hypot(smoothedVx, smoothedVy);
 
+    const motionFactor = settings.idleAnimation !== false ? ((settings.animMotionStrength ?? 100) / 100) : 0;
+    const breatheFactor = settings.idleAnimation !== false ? ((settings.animBreatheStrength ?? 100) / 100) : 0;
+
     // A) Calculate Target Base Point for the Stick
     let targetBaseX = w * 0.95;
     let targetBaseY = h + 20;
 
-    if (settings.stickOrigin === "bottom-left") {
-      targetBaseX = w * 0.05;
+    if (settings.stickOrigin === "bottom-right") {
+      // Wandert entlang des unteren Bildschirmrands mit (rechtsseitig orientiert)
+      targetBaseX = w * 0.55 + (mouseX / w) * (w * 0.42);
+      targetBaseY = h + 20;
+    } else if (settings.stickOrigin === "bottom-left") {
+      // Wandert entlang des unteren Bildschirmrands mit (linksseitig orientiert)
+      targetBaseX = w * 0.03 + (mouseX / w) * (w * 0.42);
       targetBaseY = h + 20;
     } else if (settings.stickOrigin === "dynamic") {
-      // Base follows cursor horizontally with a natural offset
-      targetBaseX = Math.min(Math.max(mouseX + w * 0.22, w * 0.15), w * 0.95);
+      // Dynamisch von unten:
+      // - In der Bildschirmmitte zeigt der Stab gerade nach oben (Basis exakt unter Cursor)
+      // - Wandert die Maus nach rechts/links, wandert die Basis mit und neigt sich leicht schräg
+      const centerOffset = mouseX - w * 0.5;
+      targetBaseX = mouseX - centerOffset * 0.35;
       targetBaseY = h + 20;
     }
 
-    // Dynamic base flex during movement for corner modes (elastic rod effect)
-    if (settings.stickOrigin !== "dynamic" && settings.idleAnimation) {
-      const baseFlex = Math.max(-20, Math.min(20, -smoothedVx * 0.14));
+    // Dynamic base flex during horizontal motion
+    if (motionFactor > 0 && settings.stickOrigin !== "floating") {
+      const baseFlex = Math.max(-28, Math.min(28, -smoothedVx * 0.16)) * motionFactor;
       targetBaseX += baseFlex;
     }
 
@@ -365,8 +396,8 @@
       currentBaseY = targetBaseY;
     } else {
       // Fluid spring interpolation for base
-      currentBaseX += (targetBaseX - currentBaseX) * 0.08;
-      currentBaseY += (targetBaseY - currentBaseY) * 0.08;
+      currentBaseX += (targetBaseX - currentBaseX) * 0.09;
+      currentBaseY += (targetBaseY - currentBaseY) * 0.09;
     }
 
     // B) Idle Breathing & Movement Animation ("Dezente Animation im Stillstand & beim Bewegen")
@@ -376,27 +407,28 @@
     let moveLift = 0;
     let motionLag = 0;
 
-    if (settings.idleAnimation) {
+    if (breatheFactor > 0) {
       // 1. Idle Breathing: dominant when still, smoothly yields when in motion
       idlePhase += 0.035;
       const idleWeight = Math.max(0, 1 - currentSpeed * 0.25); // 1.0 when still, 0 when moving
-      swayAngle = Math.sin(idlePhase) * (0.75 * idleWeight); // 0.75 deg gentle rocking
-      breatheLift = Math.cos(idlePhase * 0.7) * (1.5 * idleWeight); // 1.5px subtle float
+      swayAngle = Math.sin(idlePhase) * (0.75 * idleWeight) * breatheFactor;
+      breatheLift = Math.cos(idlePhase * 0.7) * (1.5 * idleWeight) * breatheFactor;
+    }
 
+    if (motionFactor > 0) {
       // 2. Movement Inertia Tilt (subtle rotational lag trailing mouse movement)
-      // Max ±3.5 degrees so it's always subtle and non-distracting
-      const targetInertia = Math.max(-3.5, Math.min(3.5, -smoothedVx * 0.14));
+      const targetInertia = Math.max(-4.0, Math.min(4.0, -smoothedVx * 0.15)) * motionFactor;
       inertiaAngle += (targetInertia - inertiaAngle) * 0.20;
 
       // 3. Movement Sway / Bobbing & Lift (subtle organic motion rhythm)
       if (currentSpeed > 0.4) {
         movePhase += Math.min(currentSpeed * 0.04, 0.22);
       }
-      moveTilt = Math.sin(movePhase) * Math.min(currentSpeed * 0.05, 1.2);
-      moveLift = Math.cos(movePhase * 0.8) * Math.min(currentSpeed * 0.04, 1.5);
+      moveTilt = Math.sin(movePhase) * Math.min(currentSpeed * 0.05, 1.2) * motionFactor;
+      moveLift = Math.cos(movePhase * 0.8) * Math.min(currentSpeed * 0.04, 1.5) * motionFactor;
 
       // 4. Subtle elastic stretch along the stick (1-3.5px)
-      motionLag = Math.min(3.5, currentSpeed * 0.06);
+      motionLag = Math.min(3.5, currentSpeed * 0.06) * motionFactor;
     } else {
       inertiaAngle = 0;
     }
@@ -424,11 +456,25 @@
       } else if (settings.stickOrigin === "floating") {
         // Free-floating pointer without stick to screen edge
         if (rodEl) rodEl.style.display = "none";
-        const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.46, tipY: 0.21, cuffX: 0.51, cuffY: 1.0, aspect: 1.47 };
+        const m = getStyleMeasurements();
+
+        // User customizable tilt angle + dynamic motion/screen tilt
+        const baseAngle = Number(settings.floatingAngle ?? -15);
+        let dynamicTilt = 0;
+        if (settings.floatingDynamic !== false) {
+          // Subtle screen position tilt (-10° on left to +10° on right)
+          const screenTilt = ((mouseX / w) - 0.5) * 20;
+          // Movement velocity tilt
+          const velocityTilt = Math.max(-8, Math.min(8, -smoothedVx * 0.16)) * (motionFactor || 1);
+          dynamicTilt = screenTilt + velocityTilt;
+        }
+
+        const finalAngle = baseAngle + dynamicTilt + totalExtraAngle;
+
         pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = tipYTarget + "px";
-        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalExtraAngle}deg)`;
+        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${finalAngle}deg)`;
         innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 8 + motionAngle * 0.3}deg)`;
       } else {
@@ -441,7 +487,7 @@
         const aimDeg = (aimAngle * 180) / Math.PI + 90;
         const totalRot = aimDeg + totalExtraAngle;
 
-        const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.46, tipY: 0.21, cuffX: 0.51, cuffY: 1.0, aspect: 1.47 };
+        const m = getStyleMeasurements();
         pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = tipYTarget + "px";
@@ -471,7 +517,8 @@
           rodEl.setAttribute("x2", rodEndX);
           rodEl.setAttribute("y2", rodEndY);
 
-          const rodW = Math.max(5, Math.round(settings.size * 0.045));
+          const rodW = settings.rodWidth !== undefined ? Number(settings.rodWidth) : Math.max(5, Math.round(settings.size * 0.045));
+          rodEl.setAttribute("stroke-width", rodW);
           rodEl.setAttribute("stroke-width", rodW);
           rodEl.setAttribute("stroke", settings.style === "wood" ? "url(#rod-grad-wood)" : "url(#rod-grad-carbon)");
         }

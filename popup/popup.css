@@ -462,3 +462,117 @@ kbd {
   margin-top: 6px;
   text-align: center;
 }
+
+/* Sub-controls Card */
+.sub-controls-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-card);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Custom Hotspot Calibration */
+.custom-hotspot-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-card);
+  padding: 8px 10px;
+  margin-top: 6px;
+}
+
+.calibration-box {
+  background: repeating-conic-gradient(#252528 0% 25%, #1e1e20 0% 50%) 50% / 14px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.calibration-target-wrapper {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+#calibration-img {
+  display: block;
+  max-height: 120px;
+  max-width: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+.calibration-crosshair {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  top: 20%;
+  left: 50%;
+}
+
+.calibration-crosshair::before,
+.calibration-crosshair::after {
+  content: "";
+  position: absolute;
+  background-color: #FF3B30;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+}
+
+.calibration-crosshair::before {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1.5px;
+  transform: translateX(-50%);
+}
+
+.calibration-crosshair::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1.5px;
+  transform: translateY(-50%);
+}
+
+.crosshair-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #FF3B30;
+  border: 1.5px solid #FFFFFF;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px rgba(255, 59, 48, 0.9), 0 0 2px rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+.calibration-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.calibration-hint {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.25;
+}

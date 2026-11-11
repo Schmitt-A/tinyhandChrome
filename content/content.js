@@ -61,10 +61,7 @@
   let ctx = null;
   let armSvgEl = null;
   let rodEl = null;
-  let rodSpecularEl = null;
-  let rodFerruleEl = null;
   let rodGradCylEl = null;
-  let rodGradFerruleEl = null;
   let pointerEl = null;
   let innerEl = null;
   let imgEl = null;
@@ -249,7 +246,7 @@
     armSvgEl.id = "tinyhand-arm-svg";
     armSvgEl.innerHTML = `
       <defs>
-        <filter id="rod-shadow" x="-40%" y="-40%" width="180%" height="180%">
+        <filter id="rod-shadow" x="-50%" y="-50%" width="200%" height="200%">
           <feDropShadow id="rod-fe-shadow" dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.38"/>
         </filter>
         <linearGradient id="rod-grad-cylinder" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
@@ -259,26 +256,15 @@
           <stop id="rod-stop-3" offset="72%" stop-color="#262629"/>
           <stop id="rod-stop-4" offset="100%" stop-color="#060608"/>
         </linearGradient>
-        <linearGradient id="rod-grad-ferrule" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
-          <stop id="ferrule-stop-0" offset="0%" stop-color="#505058"/>
-          <stop id="ferrule-stop-1" offset="35%" stop-color="#D8D8E0"/>
-          <stop id="ferrule-stop-2" offset="65%" stop-color="#8E8E96"/>
-          <stop id="ferrule-stop-3" offset="100%" stop-color="#3A3A40"/>
-        </linearGradient>
       </defs>
       <g id="tinyhand-rod-group" filter="url(#rod-shadow)">
         <line id="tinyhand-rod" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-cylinder)" stroke-width="7" stroke-linecap="round" />
-        <line id="tinyhand-rod-specular" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255, 255, 255, 0.28)" stroke-width="2" stroke-linecap="round" />
-        <line id="tinyhand-rod-ferrule" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-ferrule)" stroke-width="10" stroke-linecap="butt" />
       </g>
     `;
     containerEl.appendChild(armSvgEl);
 
     rodEl = armSvgEl.querySelector("#tinyhand-rod");
-    rodSpecularEl = armSvgEl.querySelector("#tinyhand-rod-specular");
-    rodFerruleEl = armSvgEl.querySelector("#tinyhand-rod-ferrule");
     rodGradCylEl = armSvgEl.querySelector("#rod-grad-cylinder");
-    rodGradFerruleEl = armSvgEl.querySelector("#rod-grad-ferrule");
 
     // Canvas for drawing
     canvasEl = document.createElement("canvas");
@@ -407,19 +393,6 @@
     if (s2) s2.setAttribute("stop-color", p.highlight);
     if (s3) s3.setAttribute("stop-color", p.midtone);
     if (s4) s4.setAttribute("stop-color", p.deepShadow);
-
-    if (rodSpecularEl) {
-      rodSpecularEl.setAttribute("stroke", p.specular);
-    }
-
-    const f0 = armSvgEl.querySelector("#ferrule-stop-0");
-    const f1 = armSvgEl.querySelector("#ferrule-stop-1");
-    const f2 = armSvgEl.querySelector("#ferrule-stop-2");
-    const f3 = armSvgEl.querySelector("#ferrule-stop-3");
-    if (f0) f0.setAttribute("stop-color", p.ferrule[0]);
-    if (f1) f1.setAttribute("stop-color", p.ferrule[1]);
-    if (f2) f2.setAttribute("stop-color", p.ferrule[2]);
-    if (f3) f3.setAttribute("stop-color", p.ferrule[3]);
   }
 
   // 6. Update Visual Appearance based on Settings
@@ -431,8 +404,6 @@
     if (!settings.enabled) {
       pointerEl.style.display = "none";
       if (rodEl) rodEl.style.display = "none";
-      if (rodSpecularEl) rodSpecularEl.style.display = "none";
-      if (rodFerruleEl) rodFerruleEl.style.display = "none";
       return;
     }
 
@@ -502,17 +473,16 @@
     let targetBaseY = h + 20;
 
     if (settings.stickOrigin === "bottom-right") {
-      // Wandert entlang des unteren Bildschirmrands mit (rechtsseitig orientiert)
-      targetBaseX = w * 0.60 + (mouseX / w) * (w * 0.35);
+      // Fest in der unteren rechten Ecke verankert (authentisch wie in TinyHand macOS)
+      targetBaseX = w * 0.94;
       targetBaseY = h + 20;
     } else if (settings.stickOrigin === "bottom-left") {
-      // Wandert entlang des unteren Bildschirmrands mit (linksseitig orientiert)
-      targetBaseX = w * 0.05 + (mouseX / w) * (w * 0.35);
+      // Fest in der unteren linken Ecke verankert
+      targetBaseX = w * 0.06;
       targetBaseY = h + 20;
     } else if (settings.stickOrigin === "dynamic") {
-      // Dynamisch von unten:
-      // Der Stab folgt dem Cursor von unten direkt mit.
-      // Basis bleibt stabil unter dem Cursor mit nur minimalem, sanftem Neigungseffekt (max ~3° an den Rändern)
+      // Dynamisch von unten: Basis folgt dem Cursor horizontal unterhalb des Bildschirms
+      // Mit subtiler, natürlicher Schrägneigung (max ~5° an den Bildschirmrändern)
       const normX = Math.min(1, Math.max(0, mouseX / (w || 1)));
       const subtleTilt = (normX - 0.5) * Math.min(60, w * 0.05);
       targetBaseX = mouseX - subtleTilt;
@@ -576,8 +546,6 @@
       if (settings.style === "laser") {
         // Laser dot pointer
         if (rodEl) rodEl.style.display = "none";
-        if (rodSpecularEl) rodSpecularEl.style.display = "none";
-        if (rodFerruleEl) rodFerruleEl.style.display = "none";
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = mouseY + "px";
         pointerEl.style.transformOrigin = "50% 50%";
@@ -587,8 +555,6 @@
       } else if (settings.stickOrigin === "floating") {
         // Free-floating pointer without stick to screen edge
         if (rodEl) rodEl.style.display = "none";
-        if (rodSpecularEl) rodSpecularEl.style.display = "none";
-        if (rodFerruleEl) rodFerruleEl.style.display = "none";
         const m = getStyleMeasurements();
 
         // User customizable tilt angle + dynamic motion/screen tilt
@@ -613,95 +579,66 @@
       } else {
         // Stick mode: single continuous rigid stick extending from corner / bottom directly into hand cuff!
         if (rodEl) rodEl.style.display = "block";
-        if (rodSpecularEl) rodSpecularEl.style.display = "block";
-        if (rodFerruleEl) rodFerruleEl.style.display = "block";
 
         const m = getStyleMeasurements();
         const handH = settings.size / (m.aspect || 1.4);
 
-        // Vector from Cuff to Tip in unrotated hand image coords
-        const vCuffToTipX = (m.tipX - m.cuffX) * settings.size;
-        const vCuffToTipY = (m.tipY - m.cuffY) * handH;
-        const cuffToTipDist = Math.hypot(vCuffToTipX, vCuffToTipY) || 1;
-        const handAxisAngle = Math.atan2(vCuffToTipY, vCuffToTipX);
+        // Local vector from cuff to tip in unrotated image pixels
+        const localDx = (m.tipX - m.cuffX) * settings.size;
+        const localDy = (m.tipY - m.cuffY) * handH;
 
-        // Vector from Base to Fingertip on screen
-        const dx = mouseX - currentBaseX;
-        const dy = tipYTarget - currentBaseY;
-        const rodLength = Math.hypot(dx, dy) || 1;
-        const rodAngle = Math.atan2(dy, dx);
+        // Iterative collinear alignment:
+        // Ensures the rod enters the cuff at a true 90° perpendicular angle,
+        // while the fingertip stays exactly at (mouseX, tipYTarget).
+        let rodAngle = Math.atan2(tipYTarget - currentBaseY, mouseX - currentBaseX);
+        let handRad = rodAngle + Math.PI / 2;
+        let cuffScreenX = mouseX;
+        let cuffScreenY = tipYTarget;
 
-        // Collinear lock: aligns hand cuff-to-tip axis directly with the rod vector!
-        const totalRot = ((rodAngle - handAxisAngle) * 180) / Math.PI;
+        for (let iter = 0; iter < 2; iter++) {
+          const offX = localDx * Math.cos(handRad) - localDy * Math.sin(handRad);
+          const offY = localDx * Math.sin(handRad) + localDy * Math.cos(handRad);
+          cuffScreenX = mouseX - offX;
+          cuffScreenY = tipYTarget - offY;
+          rodAngle = Math.atan2(cuffScreenY - currentBaseY, cuffScreenX - currentBaseX);
+          handRad = rodAngle + Math.PI / 2;
+        }
+
+        const totalRotDeg = (handRad * 180) / Math.PI;
 
         pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = tipYTarget + "px";
-        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRot}deg)`;
+        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRotDeg}deg)`;
         innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         innerEl.style.transform = `scale(${pressScale})`;
 
-        // Exact collinear screen coordinates of the Cuff opening
-        const cuffScreenX = mouseX - Math.cos(rodAngle) * cuffToTipDist;
-        const cuffScreenY = tipYTarget - Math.sin(rodAngle) * cuffToTipDist;
-
-        // Push 8px into the cuff opening so the rod seamlessly enters the sleeve
+        // Push 8px into the cuff opening so the rod seamlessly enters the sleeve behind the cuff
         const rodEndX = cuffScreenX + Math.cos(rodAngle) * 8;
         const rodEndY = cuffScreenY + Math.sin(rodAngle) * 8;
 
         const rodW = settings.rodWidth !== undefined ? Number(settings.rodWidth) : Math.max(5, Math.round(settings.size * 0.045));
 
-        // Normal vector perpendicular to the rod for cylindrical 3D lighting gradient
-        const nx = -dy / rodLength;
-        const ny = dx / rodLength;
-
-        // 1. Position Main 3D Cylindrical Rod
+        // 1. Position Main 3D Cylindrical Rod (uniform constant stroke-width)
         rodEl.setAttribute("x1", currentBaseX);
         rodEl.setAttribute("y1", currentBaseY);
         rodEl.setAttribute("x2", rodEndX);
         rodEl.setAttribute("y2", rodEndY);
         rodEl.setAttribute("stroke-width", rodW);
 
-        // 2. Position Specular Highlight Line (offset ~22% towards highlight side)
-        if (rodSpecularEl) {
-          const specOff = rodW * 0.22;
-          rodSpecularEl.setAttribute("x1", currentBaseX - nx * specOff);
-          rodSpecularEl.setAttribute("y1", currentBaseY - ny * specOff);
-          rodSpecularEl.setAttribute("x2", rodEndX - nx * specOff);
-          rodSpecularEl.setAttribute("y2", rodEndY - ny * specOff);
-          rodSpecularEl.setAttribute("stroke-width", Math.max(1.2, rodW * 0.22));
-        }
+        // 2. Normal vector strictly perpendicular to the rod axis
+        const nx = -Math.sin(rodAngle);
+        const ny = Math.cos(rodAngle);
 
-        // 3. Position Metallic Ferrule (connector collar at the cuff entrance)
-        if (rodFerruleEl) {
-          const ferruleLen = Math.min(14, Math.max(8, rodLength * 0.12));
-          const ferruleStartX = cuffScreenX - Math.cos(rodAngle) * ferruleLen;
-          const ferruleStartY = cuffScreenY - Math.sin(rodAngle) * ferruleLen;
-          rodFerruleEl.setAttribute("x1", ferruleStartX);
-          rodFerruleEl.setAttribute("y1", ferruleStartY);
-          rodFerruleEl.setAttribute("x2", rodEndX);
-          rodFerruleEl.setAttribute("y2", rodEndY);
-          rodFerruleEl.setAttribute("stroke-width", rodW + 3);
-        }
-
-        // 4. Orient the 3D Cylindrical Gradient across the rod's diameter
+        // 3. Orient the 3D Cylindrical Gradient across the rod's diameter
         if (rodGradCylEl) {
-          const midX = (currentBaseX + cuffScreenX) / 2;
-          const midY = (currentBaseY + cuffScreenY) / 2;
+          const midX = (currentBaseX + rodEndX) / 2;
+          const midY = (currentBaseY + rodEndY) / 2;
           const halfW = rodW / 2;
           rodGradCylEl.setAttribute("x1", midX - nx * halfW);
           rodGradCylEl.setAttribute("y1", midY - ny * halfW);
           rodGradCylEl.setAttribute("x2", midX + nx * halfW);
           rodGradCylEl.setAttribute("y2", midY + ny * halfW);
-        }
-
-        // 5. Orient the Ferrule Gradient across the ferrule diameter
-        if (rodGradFerruleEl) {
-          const halfFW = (rodW + 3) / 2;
-          rodGradFerruleEl.setAttribute("x1", cuffScreenX - nx * halfFW);
-          rodGradFerruleEl.setAttribute("y1", cuffScreenY - ny * halfFW);
-          rodGradFerruleEl.setAttribute("x2", cuffScreenX + nx * halfFW);
-          rodGradFerruleEl.setAttribute("y2", cuffScreenY + ny * halfFW);
         }
       }
     }
@@ -844,8 +781,6 @@
     isMouseInside = false;
     if (pointerEl) pointerEl.style.display = "none";
     if (rodEl) rodEl.style.display = "none";
-    if (rodSpecularEl) rodSpecularEl.style.display = "none";
-    if (rodFerruleEl) rodFerruleEl.style.display = "none";
     if (drawing) {
       drawing = false;
       currentStroke = null;
@@ -927,6 +862,10 @@
     if (areaName !== "local") return;
     for (const [key, change] of Object.entries(changes)) {
       settings[key] = change.newValue;
+    }
+    if (changes.stickOrigin) {
+      currentBaseX = -1;
+      currentBaseY = -1;
     }
     updatePointerVisuals();
     if (!settings.enabled) {

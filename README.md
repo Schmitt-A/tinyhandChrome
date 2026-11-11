@@ -23,7 +23,10 @@ Die Erweiterung injiziert einen virtuellen Zeiger und eine transparente Zeichene
   - **Zeigergröße (60 – 320 px):** Präsentationszeiger in jeder gewünschten Größe – von dezent bis weithin sichtbar.
   - **Stabbreite stufenlos regelbar (2 – 24 px):** Passe die Dicke des Zeigestabes perfekt an deine Bildschirmauflösung und deinen Stil an.
   - **Schatten & 3D-Tiefe stufenlos regelbar (0% – 100%):** Weicher, realistischer Drop-Shadow unter Hand und Stab für spürbare räumliche Tiefe über dem Webseiten-Inhalt (oder komplett deaktivierbar für einen flachen Look).
-- 🪄 **Dynamischer Stab-Verlauf & Verankerung:**
+- 🪄 **Dynamischer Stab-Verlauf & authentische Stab-Materialien:**
+  - **Authentisches 3D-Zylinder-Design:** Wie im originalen *nilbuild/tinyhand* besitzt der Stab nun dynamische zylindrische Lichtreflexe, eine Glanzlinie und eine edle Metall-Zwinge (Manschette) am Übergang zur Hand.
+  - **Materialien passend zum Zeigerstil:** Automatischer Wechsel zwischen Obsidian-Carbon (mit Titan-Zwinge), Ahorn/Birken-Hartholz (mit Messing-Zwinge), poliertem Flugzeug-Aluminium oder schneeweißem Lack.
+  - **Feste, wackelfreie Verbindung:** Hand und Stab sind wie bei einem echten Referenten-Zeigestock kollinear fest miteinander verbunden – kein loses Wackeln der Hand auf dem Stab mehr!
   - **Unten rechts (wandert am Rand mit):** Der Stab reicht diagonal aus der rechten unteren Hälfte heran – die Basis bleibt nicht starr an einem Punkt fixiert, sondern gleitet geschmeidig entlang des unteren Randes mit dem Cursor mit.
   - **Unten links (wandert am Rand mit):** Gleitet analog für die linke Bildschirmseite mit.
   - **Dynamisch von unten (folgt & neigt sich):** In der Bildschirmmitte zeigt der Stab gerade von unten nach oben. Wandert der Cursor nach links oder rechts, wandert das Stabende dynamisch mit und der Stab neigt sich organisch schräg in die Bewegungsrichtung.

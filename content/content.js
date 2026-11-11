@@ -61,6 +61,10 @@
   let ctx = null;
   let armSvgEl = null;
   let rodEl = null;
+  let rodSpecularEl = null;
+  let rodFerruleEl = null;
+  let rodGradCylEl = null;
+  let rodGradFerruleEl = null;
   let pointerEl = null;
   let innerEl = null;
   let imgEl = null;
@@ -120,6 +124,53 @@
     }
     return STYLE_MEASUREMENTS[settings.style] || { tipX: 0.46, tipY: 0.21, cuffX: 0.51, cuffY: 1.0, aspect: 1.47 };
   }
+
+  // Authentic rod styling & material palettes inspired by nilbuild/tinyhand
+  const STICK_THEMES = {
+    // Warm turned hardwood with brass ferrule
+    "plush": "wood", "wood": "wood", "choco": "wood", "cookie": "wood", "skeleton": "wood",
+    // Pure white lacquered rod with silver ferrule
+    "coral": "white", "neon": "white", "pink": "white", "blue": "white",
+    // Brushed aircraft aluminum with polished chrome ferrule
+    "robot": "steel", "mech": "steel", "chrome": "steel", "lowpoly": "steel", "marble": "steel", "glass": "steel",
+    // Premium obsidian carbon rod with titanium ferrule
+    "default": "carbon"
+  };
+
+  const ROD_PALETTES = {
+    "carbon": {
+      highlight: "#5C5C64",
+      midtone: "#262629",
+      shadow: "#121214",
+      deepShadow: "#060608",
+      specular: "rgba(255, 255, 255, 0.28)",
+      ferrule: ["#505058", "#DCDCE4", "#8E8E96", "#3A3A40"]
+    },
+    "wood": {
+      highlight: "#F4DEBF",
+      midtone: "#D4AD7A",
+      shadow: "#9E7440",
+      deepShadow: "#563A1A",
+      specular: "rgba(255, 248, 235, 0.35)",
+      ferrule: ["#A07830", "#FDE89C", "#D4A848", "#6E4E18"] // Warm jewelry brass/gold
+    },
+    "white": {
+      highlight: "#FFFFFF",
+      midtone: "#ECE9E5",
+      shadow: "#C6C0B8",
+      deepShadow: "#8C867E",
+      specular: "rgba(255, 255, 255, 0.55)",
+      ferrule: ["#A0A0A8", "#FFFFFF", "#B8B8C0", "#686870"] // Pure silver
+    },
+    "steel": {
+      highlight: "#FFFFFF",
+      midtone: "#C6CAD2",
+      shadow: "#828892",
+      deepShadow: "#4E545E",
+      specular: "rgba(255, 255, 255, 0.45)",
+      ferrule: ["#70757E", "#F0F2F6", "#A2A7B0", "#4A4E56"] // Aircraft chrome
+    }
+  };
 
   // 1. Initialize DOM & Shadow DOM
   function initDOM() {
@@ -201,24 +252,33 @@
         <filter id="rod-shadow" x="-40%" y="-40%" width="180%" height="180%">
           <feDropShadow id="rod-fe-shadow" dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.38"/>
         </filter>
-        <linearGradient id="rod-grad-carbon" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#141416"/>
-          <stop offset="30%" stop-color="#3A3A3C"/>
-          <stop offset="70%" stop-color="#545458"/>
-          <stop offset="100%" stop-color="#111113"/>
+        <linearGradient id="rod-grad-cylinder" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
+          <stop id="rod-stop-0" offset="0%" stop-color="#121214"/>
+          <stop id="rod-stop-1" offset="25%" stop-color="#262629"/>
+          <stop id="rod-stop-2" offset="48%" stop-color="#5C5C64"/>
+          <stop id="rod-stop-3" offset="72%" stop-color="#262629"/>
+          <stop id="rod-stop-4" offset="100%" stop-color="#060608"/>
         </linearGradient>
-        <linearGradient id="rod-grad-wood" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#5C3A21"/>
-          <stop offset="40%" stop-color="#8B5A2B"/>
-          <stop offset="70%" stop-color="#CD853F"/>
-          <stop offset="100%" stop-color="#4A2E1B"/>
+        <linearGradient id="rod-grad-ferrule" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
+          <stop id="ferrule-stop-0" offset="0%" stop-color="#505058"/>
+          <stop id="ferrule-stop-1" offset="35%" stop-color="#D8D8E0"/>
+          <stop id="ferrule-stop-2" offset="65%" stop-color="#8E8E96"/>
+          <stop id="ferrule-stop-3" offset="100%" stop-color="#3A3A40"/>
         </linearGradient>
       </defs>
-      <line id="tinyhand-rod" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-carbon)" stroke-width="7" stroke-linecap="round" filter="url(#rod-shadow)" />
+      <g id="tinyhand-rod-group" filter="url(#rod-shadow)">
+        <line id="tinyhand-rod" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-cylinder)" stroke-width="7" stroke-linecap="round" />
+        <line id="tinyhand-rod-specular" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255, 255, 255, 0.28)" stroke-width="2" stroke-linecap="round" />
+        <line id="tinyhand-rod-ferrule" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-ferrule)" stroke-width="10" stroke-linecap="butt" />
+      </g>
     `;
     containerEl.appendChild(armSvgEl);
 
     rodEl = armSvgEl.querySelector("#tinyhand-rod");
+    rodSpecularEl = armSvgEl.querySelector("#tinyhand-rod-specular");
+    rodFerruleEl = armSvgEl.querySelector("#tinyhand-rod-ferrule");
+    rodGradCylEl = armSvgEl.querySelector("#rod-grad-cylinder");
+    rodGradFerruleEl = armSvgEl.querySelector("#rod-grad-ferrule");
 
     // Canvas for drawing
     canvasEl = document.createElement("canvas");
@@ -331,7 +391,38 @@
     }
   }
 
-  // 5. Update Visual Appearance based on Settings
+  // 5. Update Rod Material & Theme (matches authentic nilbuild/tinyhand aesthetics)
+  function updateRodTheme() {
+    if (!armSvgEl) return;
+    const themeKey = STICK_THEMES[settings.style] || STICK_THEMES["default"];
+    const p = ROD_PALETTES[themeKey] || ROD_PALETTES["carbon"];
+
+    const s0 = armSvgEl.querySelector("#rod-stop-0");
+    const s1 = armSvgEl.querySelector("#rod-stop-1");
+    const s2 = armSvgEl.querySelector("#rod-stop-2");
+    const s3 = armSvgEl.querySelector("#rod-stop-3");
+    const s4 = armSvgEl.querySelector("#rod-stop-4");
+    if (s0) s0.setAttribute("stop-color", p.shadow);
+    if (s1) s1.setAttribute("stop-color", p.midtone);
+    if (s2) s2.setAttribute("stop-color", p.highlight);
+    if (s3) s3.setAttribute("stop-color", p.midtone);
+    if (s4) s4.setAttribute("stop-color", p.deepShadow);
+
+    if (rodSpecularEl) {
+      rodSpecularEl.setAttribute("stroke", p.specular);
+    }
+
+    const f0 = armSvgEl.querySelector("#ferrule-stop-0");
+    const f1 = armSvgEl.querySelector("#ferrule-stop-1");
+    const f2 = armSvgEl.querySelector("#ferrule-stop-2");
+    const f3 = armSvgEl.querySelector("#ferrule-stop-3");
+    if (f0) f0.setAttribute("stop-color", p.ferrule[0]);
+    if (f1) f1.setAttribute("stop-color", p.ferrule[1]);
+    if (f2) f2.setAttribute("stop-color", p.ferrule[2]);
+    if (f3) f3.setAttribute("stop-color", p.ferrule[3]);
+  }
+
+  // 6. Update Visual Appearance based on Settings
   function updatePointerVisuals() {
     updateCursorVisibility();
 
@@ -340,6 +431,8 @@
     if (!settings.enabled) {
       pointerEl.style.display = "none";
       if (rodEl) rodEl.style.display = "none";
+      if (rodSpecularEl) rodSpecularEl.style.display = "none";
+      if (rodFerruleEl) rodFerruleEl.style.display = "none";
       return;
     }
 
@@ -364,7 +457,8 @@
     pointerEl.style.width = settings.size + "px";
     pointerEl.className = `style-${settings.style}`;
 
-    // Apply 3D shadow depth
+    // Apply rod theme & 3D shadow depth
+    updateRodTheme();
     updateShadowStyles();
 
     startMainLoop();
@@ -486,6 +580,8 @@
       if (settings.style === "laser") {
         // Laser dot pointer
         if (rodEl) rodEl.style.display = "none";
+        if (rodSpecularEl) rodSpecularEl.style.display = "none";
+        if (rodFerruleEl) rodFerruleEl.style.display = "none";
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = mouseY + "px";
         pointerEl.style.transformOrigin = "50% 50%";
@@ -495,6 +591,8 @@
       } else if (settings.stickOrigin === "floating") {
         // Free-floating pointer without stick to screen edge
         if (rodEl) rodEl.style.display = "none";
+        if (rodSpecularEl) rodSpecularEl.style.display = "none";
+        if (rodFerruleEl) rodFerruleEl.style.display = "none";
         const m = getStyleMeasurements();
 
         // User customizable tilt angle + dynamic motion/screen tilt
@@ -517,49 +615,101 @@
         innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 8 + motionAngle * 0.3}deg)`;
       } else {
-        // Stick mode: single continuous stick extending from corner / bottom directly into hand cuff!
+        // Stick mode: single continuous rigid stick extending from corner / bottom directly into hand cuff!
         if (rodEl) rodEl.style.display = "block";
-
-        const dx = mouseX - currentBaseX;
-        const dy = tipYTarget - currentBaseY;
-        const aimAngle = Math.atan2(dy, dx); // radians
-        const aimDeg = (aimAngle * 180) / Math.PI + 90;
-        const totalRot = aimDeg + totalExtraAngle;
+        if (rodSpecularEl) rodSpecularEl.style.display = "block";
+        if (rodFerruleEl) rodFerruleEl.style.display = "block";
 
         const m = getStyleMeasurements();
+        const handH = settings.size / (m.aspect || 1.4);
+
+        // Vector from Cuff to Tip in unrotated hand image coords
+        const vCuffToTipX = (m.tipX - m.cuffX) * settings.size;
+        const vCuffToTipY = (m.tipY - m.cuffY) * handH;
+        const cuffToTipDist = Math.hypot(vCuffToTipX, vCuffToTipY) || 1;
+        const handAxisAngle = Math.atan2(vCuffToTipY, vCuffToTipX);
+
+        // Vector from Base to Fingertip on screen
+        const dx = mouseX - currentBaseX;
+        const dy = tipYTarget - currentBaseY;
+        const rodLength = Math.hypot(dx, dy) || 1;
+        const rodAngle = Math.atan2(dy, dx);
+
+        // Collinear lock: aligns hand cuff-to-tip axis directly with the rod vector!
+        const baseRotDeg = ((rodAngle - handAxisAngle) * 180) / Math.PI;
+
+        // Subtle structural elasticity (max ±0.4 deg, never disjointed or wobbling off the cuff)
+        const subtleFlex = Math.max(-0.4, Math.min(0.4, -smoothedVx * 0.02)) * motionFactor;
+        const totalRot = baseRotDeg + subtleFlex;
+
         pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
         pointerEl.style.left = mouseX + "px";
         pointerEl.style.top = tipYTarget + "px";
         pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRot}deg)`;
         innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
-        innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 4 + motionAngle * 0.3}deg)`;
+        innerEl.style.transform = `scale(${pressScale})`;
 
-        // Calculate exact screen coordinates of the cuff opening where the rod enters
-        const handH = settings.size / (m.aspect || 1.4);
-        const localDx = (m.cuffX - m.tipX) * settings.size;
-        const localDy = (m.cuffY - m.tipY) * handH + motionLag;
-        const theta = (totalRot * Math.PI) / 180;
-        const rotDx = localDx * Math.cos(theta) - localDy * Math.sin(theta);
-        const rotDy = localDx * Math.sin(theta) + localDy * Math.cos(theta);
+        // Exact collinear screen coordinates of the Cuff opening
+        const cuffScreenX = mouseX - Math.cos(rodAngle) * cuffToTipDist;
+        const cuffScreenY = tipYTarget - Math.sin(rodAngle) * cuffToTipDist;
 
-        const cuffScreenX = mouseX + rotDx;
-        const cuffScreenY = tipYTarget + rotDy;
+        // Push 8px into the cuff opening so the rod seamlessly enters the sleeve
+        const rodEndX = cuffScreenX + Math.cos(rodAngle) * 8;
+        const rodEndY = cuffScreenY + Math.sin(rodAngle) * 8;
 
-        // Push 6px into the cuff so the rod seamlessly tucks behind the hand cuff
-        const rodAngle = Math.atan2(cuffScreenY - currentBaseY, cuffScreenX - currentBaseX);
-        const rodEndX = cuffScreenX + Math.cos(rodAngle) * 6;
-        const rodEndY = cuffScreenY + Math.sin(rodAngle) * 6;
+        const rodW = settings.rodWidth !== undefined ? Number(settings.rodWidth) : Math.max(5, Math.round(settings.size * 0.045));
 
-        if (rodEl) {
-          rodEl.setAttribute("x1", currentBaseX);
-          rodEl.setAttribute("y1", currentBaseY);
-          rodEl.setAttribute("x2", rodEndX);
-          rodEl.setAttribute("y2", rodEndY);
+        // Normal vector perpendicular to the rod for cylindrical 3D lighting gradient
+        const nx = -dy / rodLength;
+        const ny = dx / rodLength;
 
-          const rodW = settings.rodWidth !== undefined ? Number(settings.rodWidth) : Math.max(5, Math.round(settings.size * 0.045));
-          rodEl.setAttribute("stroke-width", rodW);
-          rodEl.setAttribute("stroke-width", rodW);
-          rodEl.setAttribute("stroke", settings.style === "wood" ? "url(#rod-grad-wood)" : "url(#rod-grad-carbon)");
+        // 1. Position Main 3D Cylindrical Rod
+        rodEl.setAttribute("x1", currentBaseX);
+        rodEl.setAttribute("y1", currentBaseY);
+        rodEl.setAttribute("x2", rodEndX);
+        rodEl.setAttribute("y2", rodEndY);
+        rodEl.setAttribute("stroke-width", rodW);
+
+        // 2. Position Specular Highlight Line (offset ~22% towards highlight side)
+        if (rodSpecularEl) {
+          const specOff = rodW * 0.22;
+          rodSpecularEl.setAttribute("x1", currentBaseX - nx * specOff);
+          rodSpecularEl.setAttribute("y1", currentBaseY - ny * specOff);
+          rodSpecularEl.setAttribute("x2", rodEndX - nx * specOff);
+          rodSpecularEl.setAttribute("y2", rodEndY - ny * specOff);
+          rodSpecularEl.setAttribute("stroke-width", Math.max(1.2, rodW * 0.22));
+        }
+
+        // 3. Position Metallic Ferrule (connector collar at the cuff entrance)
+        if (rodFerruleEl) {
+          const ferruleLen = Math.min(14, Math.max(8, rodLength * 0.12));
+          const ferruleStartX = cuffScreenX - Math.cos(rodAngle) * ferruleLen;
+          const ferruleStartY = cuffScreenY - Math.sin(rodAngle) * ferruleLen;
+          rodFerruleEl.setAttribute("x1", ferruleStartX);
+          rodFerruleEl.setAttribute("y1", ferruleStartY);
+          rodFerruleEl.setAttribute("x2", rodEndX);
+          rodFerruleEl.setAttribute("y2", rodEndY);
+          rodFerruleEl.setAttribute("stroke-width", rodW + 3);
+        }
+
+        // 4. Orient the 3D Cylindrical Gradient across the rod's diameter
+        if (rodGradCylEl) {
+          const midX = (currentBaseX + cuffScreenX) / 2;
+          const midY = (currentBaseY + cuffScreenY) / 2;
+          const halfW = rodW / 2;
+          rodGradCylEl.setAttribute("x1", midX - nx * halfW);
+          rodGradCylEl.setAttribute("y1", midY - ny * halfW);
+          rodGradCylEl.setAttribute("x2", midX + nx * halfW);
+          rodGradCylEl.setAttribute("y2", midY + ny * halfW);
+        }
+
+        // 5. Orient the Ferrule Gradient across the ferrule diameter
+        if (rodGradFerruleEl) {
+          const halfFW = (rodW + 3) / 2;
+          rodGradFerruleEl.setAttribute("x1", cuffScreenX - nx * halfFW);
+          rodGradFerruleEl.setAttribute("y1", cuffScreenY - ny * halfFW);
+          rodGradFerruleEl.setAttribute("x2", cuffScreenX + nx * halfFW);
+          rodGradFerruleEl.setAttribute("y2", cuffScreenY + ny * halfFW);
         }
       }
     }
@@ -702,6 +852,8 @@
     isMouseInside = false;
     if (pointerEl) pointerEl.style.display = "none";
     if (rodEl) rodEl.style.display = "none";
+    if (rodSpecularEl) rodSpecularEl.style.display = "none";
+    if (rodFerruleEl) rodFerruleEl.style.display = "none";
     if (drawing) {
       drawing = false;
       currentStroke = null;

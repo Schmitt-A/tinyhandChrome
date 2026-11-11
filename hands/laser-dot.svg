@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <defs>
+    <!-- Outer Glow -->
+    <radialGradient id="laserGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF3B30" stop-opacity="1"/>
+      <stop offset="30%" stop-color="#FF2D55" stop-opacity="0.8"/>
+      <stop offset="65%" stop-color="#FF375F" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FF375F" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="laserCore" cx="50%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/>
+      <stop offset="45%" stop-color="#FFF0F5" stop-opacity="0.95"/>
+      <stop offset="85%" stop-color="#FF2D55" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FF0033" stop-opacity="1"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Outer Pulsing Glow Circle -->
+  <circle cx="80" cy="80" r="70" fill="url(#laserGlow)"/>
+  <circle cx="80" cy="80" r="45" fill="#FF3B30" opacity="0.6"/>
+
+  <!-- Crosshairs / Lens Flare lines -->
+  <line x1="10" y1="80" x2="150" y2="80" stroke="#FF8596" stroke-width="2.5" opacity="0.6" stroke-linecap="round"/>
+  <line x1="80" y1="10" x2="80" y2="150" stroke="#FF8596" stroke-width="2.5" opacity="0.6" stroke-linecap="round"/>
+
+  <!-- Intense White Center -->
+  <circle cx="80" cy="80" r="22" fill="url(#laserCore)" stroke="#FFFFFF" stroke-width="2"/>
+  <circle cx="80" cy="80" r="9" fill="#FFFFFF"/>
+</svg>

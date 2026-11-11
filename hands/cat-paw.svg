@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Cat Arm/Leg -->
+    <path d="M 60 120 L 50 230 L 150 230 L 140 120 Z" fill="#FFA726" stroke="#E65100" stroke-width="5"/>
+    <!-- Stripes on Arm -->
+    <path d="M 54 180 Q 100 170 146 180" stroke="#BF360C" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M 52 205 Q 100 195 148 205" stroke="#BF360C" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+    <!-- Main Paw Head/Round -->
+    <path d="M 45 130 
+             C 30 100, 35 60, 65 50 
+             C 80 45, 95 55, 100 65 
+             C 105 55, 120 45, 135 50 
+             C 165 60, 170 100, 155 130 
+             C 145 150, 55 150, 45 130 Z" 
+          fill="#FFA726" stroke="#E65100" stroke-width="5" stroke-linejoin="round"/>
+
+    <!-- Pointing Toe / Claws (Index toe points up) -->
+    <ellipse cx="60" cy="42" rx="16" ry="20" fill="#FFCC80" stroke="#E65100" stroke-width="4"/>
+    <ellipse cx="100" cy="30" rx="18" ry="24" fill="#FFCC80" stroke="#E65100" stroke-width="4"/> <!-- Top pointing toe -->
+    <ellipse cx="140" cy="42" rx="16" ry="20" fill="#FFCC80" stroke="#E65100" stroke-width="4"/>
+    <ellipse cx="38" cy="72" rx="15" ry="18" fill="#FFCC80" stroke="#E65100" stroke-width="4"/>
+
+    <!-- Pink Paw Pads (Toe Beans) -->
+    <ellipse cx="60" cy="44" rx="9" ry="12" fill="#FF4081"/>
+    <ellipse cx="100" cy="32" rx="11" ry="14" fill="#FF4081"/>
+    <ellipse cx="140" cy="44" rx="9" ry="12" fill="#FF4081"/>
+    <ellipse cx="38" cy="74" rx="8" ry="10" fill="#FF4081"/>
+
+    <!-- Big Central Pink Heart/Bean Pad -->
+    <path d="M 100 85 
+             C 75 70, 55 95, 75 118 
+             C 85 130, 100 138, 100 138 
+             C 100 138, 115 130, 125 118 
+             C 145 95, 125 70, 100 85 Z" 
+          fill="#FF4081"/>
+  </g>
+</svg>

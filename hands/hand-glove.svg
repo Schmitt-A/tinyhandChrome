@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Glove Cuff / Wrist band -->
+    <path d="M 65 185 C 65 170, 145 170, 145 185 L 150 215 C 150 230, 60 230, 60 215 Z" fill="#F0F0F0" stroke="#1A1A1A" stroke-width="5"/>
+    <ellipse cx="105" cy="185" rx="40" ry="12" fill="#E0E0E0" stroke="#1A1A1A" stroke-width="5"/>
+
+    <!-- Glove Palm & Fingers -->
+    <path d="M 75 180 
+             C 50 170, 40 140, 50 120 
+             C 40 100, 52 80, 68 85 
+             C 70 50, 85 15, 98 10 
+             C 110 5, 122 18, 116 50 
+             L 115 88 
+             C 135 90, 145 105, 140 122 
+             C 148 132, 142 155, 132 168 
+             C 125 178, 105 182, 75 180 Z" 
+          fill="#FFFFFF" stroke="#1A1A1A" stroke-width="6" stroke-linejoin="round"/>
+
+    <!-- Index Finger Contour -->
+    <path d="M 85 86 L 96 30 C 99 16, 112 16, 114 30 L 115 88" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- 3 Characteristic Black Glove Seams on back of hand -->
+    <line x1="82" y1="135" x2="88" y2="165" stroke="#1A1A1A" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="98" y1="130" x2="102" y2="165" stroke="#1A1A1A" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="114" y1="135" x2="116" y2="165" stroke="#1A1A1A" stroke-width="4.5" stroke-linecap="round"/>
+
+    <!-- Folded Fingers lines -->
+    <path d="M 115 108 C 128 108, 136 118, 130 130" fill="none" stroke="#1A1A1A" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 112 132 C 124 134, 130 144, 122 154" fill="none" stroke="#1A1A1A" stroke-width="4.5" stroke-linecap="round"/>
+  </g>
+</svg>

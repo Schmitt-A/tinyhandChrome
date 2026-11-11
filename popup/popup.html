@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TinyHand Einstellungen</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header with Master Toggle -->
+    <header class="header">
+      <div class="brand">
+        <img src="../icons/icon-48.png" alt="TinyHand" class="logo">
+        <div>
+          <h1>TinyHand</h1>
+          <span class="subtitle">Tab-Share Overlay</span>
+        </div>
+      </div>
+      <label class="switch" title="TinyHand ein-/ausschalten (Alt+H)">
+        <input type="checkbox" id="toggle-enabled">
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <div class="content">
+      <!-- Section: Zeiger-Stil -->
+      <section class="section">
+        <label class="section-label">Zeiger-Stil <span class="badge">Alt+S</span></label>
+        <div class="style-grid">
+          <button type="button" class="style-card" data-style="classic">
+            <img src="../hands/hand-classic.svg" alt="Klassisch">
+            <span>Klassisch</span>
+          </button>
+          <button type="button" class="style-card" data-style="laser">
+            <img src="../hands/laser-dot.svg" alt="Laser">
+            <span>Laser</span>
+          </button>
+          <button type="button" class="style-card" data-style="glove">
+            <img src="../hands/hand-glove.svg" alt="Handschuh">
+            <span>Handschuh</span>
+          </button>
+          <button type="button" class="style-card" data-style="paw">
+            <img src="../hands/cat-paw.svg" alt="Katzenpfote">
+            <span>Pfote</span>
+          </button>
+          <button type="button" class="style-card" data-style="custom" id="custom-style-btn">
+            <div class="custom-icon-wrapper" id="custom-preview-wrapper">
+              <span class="upload-icon">+</span>
+            </div>
+            <span>Eigenes</span>
+          </button>
+        </div>
+        <input type="file" id="custom-file-input" accept="image/png, image/svg+xml, image/jpeg, image/webp" style="display: none;">
+        <div id="custom-actions" class="custom-actions" style="display: none;">
+          <span class="custom-name" id="custom-status-text">Eigenes Bild aktiv</span>
+          <button type="button" class="btn-text danger" id="btn-remove-custom">Entfernen</button>
+        </div>
+      </section>
+
+      <!-- Section: Zeiger-Größe -->
+      <section class="section">
+        <div class="section-header">
+          <label class="section-label" for="range-size">Zeigergröße</label>
+          <span class="value-display" id="size-display">80 px</span>
+        </div>
+        <input type="range" id="range-size" min="40" max="140" step="5" value="80">
+
+        <div class="checkbox-row">
+          <label class="checkbox-label" for="check-hide-cursor">
+            <input type="checkbox" id="check-hide-cursor" checked>
+            <span>Mauszeiger hinter Hand verstecken</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Section: Freihand-Zeichnungen -->
+      <section class="section">
+        <label class="section-label">Freihand-Tinte & Farbe</label>
+        <div class="color-row">
+          <div class="color-presets">
+            <button type="button" class="color-btn" data-color="#FF3B30" style="background: #FF3B30;" title="Neon Rot"></button>
+            <button type="button" class="color-btn" data-color="#FFCC00" style="background: #FFCC00;" title="Neon Gelb"></button>
+            <button type="button" class="color-btn" data-color="#34C759" style="background: #34C759;" title="Neon Grün"></button>
+            <button type="button" class="color-btn" data-color="#00C7BE" style="background: #00C7BE;" title="Cyan"></button>
+            <button type="button" class="color-btn" data-color="#FFFFFF" style="background: #FFFFFF;" title="Weiß"></button>
+          </div>
+          <div class="custom-color-picker" title="Eigene Farbe wählen">
+            <input type="color" id="picker-color" value="#FF3B30">
+          </div>
+        </div>
+
+        <div class="options-row">
+          <div class="control-group">
+            <label for="select-width">Strichstärke</label>
+            <select id="select-width">
+              <option value="3">Dünn (3px)</option>
+              <option value="4" selected>Mittel (4px)</option>
+              <option value="7">Dick (7px)</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="select-fade">Verblassen</label>
+            <select id="select-fade">
+              <option value="2000">2 Sekunden</option>
+              <option value="3000" selected>3 Sekunden</option>
+              <option value="5000">5 Sekunden</option>
+              <option value="0">Dauerhaft</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-group modifier-group">
+          <label for="select-modifier">Zeichnen auslösen durch</label>
+          <select id="select-modifier">
+            <option value="shift" selected>Shift + Maus ziehen</option>
+            <option value="alt">Alt/Option + Maus ziehen</option>
+            <option value="always">Immer bei Klick (Präsentationsmodus)</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Section: Tastenkürzel Info -->
+      <section class="section shortcuts-section">
+        <label class="section-label">Tastenkürzel</label>
+        <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Zeiger An / Aus</span>
+            <kbd>Alt+H</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Zeichnungen leeren</span>
+            <kbd>Alt+C</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Stil wechseln</span>
+            <kbd>Alt+S</kbd>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Freihand zeichnen</span>
+            <kbd>Shift + Ziehen</kbd>
+          </div>
+        </div>
+
+        <button type="button" class="btn-shortcuts" id="btn-configure-shortcuts">
+          Tastenkombinationen anpassen ⚙️
+        </button>
+        <p class="shortcuts-hint">Öffnet die Chrome-Tastenverwaltung, um <kbd>Alt+H</kbd> etc. nach deinen Wünschen umzubelegen.</p>
+      </section>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

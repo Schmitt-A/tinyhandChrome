@@ -21,17 +21,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   const checkHideCursor = document.getElementById("check-hide-cursor");
   const btnConfigureShortcuts = document.getElementById("btn-configure-shortcuts");
   const selectAllStyles = document.getElementById("select-all-styles");
+  const selectStickOrigin = document.getElementById("select-stick-origin");
+  const checkIdleAnimation = document.getElementById("check-idle-animation");
 
   // Load current settings from storage
   const settings = await chrome.storage.local.get({
     enabled: false,
     style: "lavender",
-    size: 80,
+    size: 160,
     color: "#8E5AF7",
     strokeWidth: 4,
     fadeDuration: 3000,
     drawModifier: "shift",
     hideNativeCursor: true,
+    stickOrigin: "bottom-right",
+    idleAnimation: true,
     customImage: null
   });
 
@@ -43,6 +47,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Hide native cursor checkbox
     if (checkHideCursor) {
       checkHideCursor.checked = state.hideNativeCursor !== false;
+    }
+
+    // Stick Origin & Idle Animation
+    if (selectStickOrigin && state.stickOrigin) {
+      selectStickOrigin.value = state.stickOrigin;
+    }
+    if (checkIdleAnimation) {
+      checkIdleAnimation.checked = state.idleAnimation !== false;
     }
 
     // Style Selection Cards
@@ -70,8 +82,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Size Slider
-    rangeSize.value = state.size || 80;
-    sizeDisplay.textContent = `${state.size || 80} px`;
+    rangeSize.value = state.size || 160;
+    sizeDisplay.textContent = `${state.size || 160} px`;
 
     // Color Swatches
     const currentColor = (state.color || "#FF3B30").toUpperCase();
@@ -231,6 +243,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (checkHideCursor) {
     checkHideCursor.addEventListener("change", async () => {
       await chrome.storage.local.set({ hideNativeCursor: checkHideCursor.checked });
+    });
+  }
+
+  if (selectStickOrigin) {
+    selectStickOrigin.addEventListener("change", async () => {
+      await chrome.storage.local.set({ stickOrigin: selectStickOrigin.value });
+    });
+  }
+
+  if (checkIdleAnimation) {
+    checkIdleAnimation.addEventListener("change", async () => {
+      await chrome.storage.local.set({ idleAnimation: checkIdleAnimation.checked });
     });
   }
 

@@ -1,6 +1,7 @@
 /**
  * TinyHand for Chrome - Content Script
- * Injects isolated Shadow DOM overlay with pointing hand, click ripple, and ephemeral canvas ink.
+ * Injects isolated Shadow DOM overlay with pointing hand, stick from screen corner/bottom,
+ * subtle breathing animation, click ripple, and ephemeral canvas ink.
  */
 
 (function () {
@@ -12,12 +13,14 @@
   let settings = {
     enabled: false,
     style: "lavender",
-    size: 80,
+    size: 160,
     color: "#8E5AF7",
     strokeWidth: 4,
     fadeDuration: 3000,
     drawModifier: "shift",
     hideNativeCursor: true,
+    stickOrigin: "bottom-right",
+    idleAnimation: true,
     customImage: null
   };
 
@@ -25,12 +28,16 @@
   let drawing = false;
   let currentStroke = null;
   let strokes = []; // Array of { color, width, points: [{x, y, time}] }
-  let animFrameId = null;
 
-  // Mouse coordinates
+  // Physics & Animation state
   let mouseX = -9999;
   let mouseY = -9999;
   let isMouseInside = false;
+  let currentBaseX = -1;
+  let currentBaseY = -1;
+  let idlePhase = 0;
+  let pressAmount = 0;
+  let mainLoopId = null;
 
   // Elements inside Shadow DOM
   let hostEl = null;
@@ -38,6 +45,9 @@
   let containerEl = null;
   let canvasEl = null;
   let ctx = null;
+  let armSvgEl = null;
+  let rodEl = null;
+  let ferruleEl = null;
   let pointerEl = null;
   let innerEl = null;
   let imgEl = null;
@@ -107,31 +117,29 @@
         pointer-events: none !important; z-index: 2147483647 !important;
         overflow: hidden; user-select: none; -webkit-user-select: none;
       }
+      #tinyhand-arm-svg {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        pointer-events: none !important; overflow: visible;
+      }
       #tinyhand-canvas {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         pointer-events: none !important;
       }
       #tinyhand-pointer {
         position: absolute; pointer-events: none !important;
-        will-change: left, top; display: none;
+        will-change: left, top, transform; display: none;
         z-index: 2147483647 !important;
       }
       #tinyhand-inner {
         display: block; width: 100%; height: auto; pointer-events: none !important;
-        transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+        transition: transform 0.08s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.38));
       }
       #tinyhand-img {
         display: block; width: 100%; height: auto; pointer-events: none !important;
       }
-      #tinyhand-inner.tinyhand-tap {
-        transform: scale(0.92) rotate(-7deg) !important;
-      }
       .style-laser #tinyhand-inner {
-        filter: drop-shadow(0 0 14px rgba(255, 59, 48, 0.9)) !important;
-      }
-      .style-laser #tinyhand-inner.tinyhand-tap {
-        transform: scale(1.35) !important;
+        filter: drop-shadow(0 0 14px rgba(255, 59, 48, 0.95)) !important;
       }
       .tinyhand-ripple {
         position: absolute; border-radius: 50%; pointer-events: none !important;
@@ -161,7 +169,37 @@
     containerEl = document.createElement("div");
     containerEl.id = "tinyhand-container";
 
-    // Canvas
+    // SVG for stick/rod coming from screen corner or bottom
+    const svgNS = "http://www.w3.org/2000/svg";
+    armSvgEl = document.createElementNS(svgNS, "svg");
+    armSvgEl.id = "tinyhand-arm-svg";
+    armSvgEl.innerHTML = `
+      <defs>
+        <filter id="rod-shadow" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.38"/>
+        </filter>
+        <linearGradient id="rod-grad-carbon" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#141416"/>
+          <stop offset="30%" stop-color="#3A3A3C"/>
+          <stop offset="70%" stop-color="#545458"/>
+          <stop offset="100%" stop-color="#111113"/>
+        </linearGradient>
+        <linearGradient id="rod-grad-wood" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#5C3A21"/>
+          <stop offset="40%" stop-color="#8B5A2B"/>
+          <stop offset="70%" stop-color="#CD853F"/>
+          <stop offset="100%" stop-color="#4A2E1B"/>
+        </linearGradient>
+      </defs>
+      <line id="tinyhand-rod" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-carbon)" stroke-width="7" stroke-linecap="round" filter="url(#rod-shadow)" />
+      <circle id="tinyhand-ferrule" cx="0" cy="0" r="5" fill="#D4AF37" stroke="#8C7320" stroke-width="1.5" filter="url(#rod-shadow)" />
+    `;
+    containerEl.appendChild(armSvgEl);
+
+    rodEl = armSvgEl.querySelector("#tinyhand-rod");
+    ferruleEl = armSvgEl.querySelector("#tinyhand-ferrule");
+
+    // Canvas for drawing
     canvasEl = document.createElement("canvas");
     canvasEl.id = "tinyhand-canvas";
     ctx = canvasEl.getContext("2d");
@@ -210,7 +248,7 @@
     ctx.scale(dpr, dpr);
   }
 
-  // 3. Update Pointer Appearance based on Settings
+  // 3. Update Cursor Override (Hide native cursor behind hand)
   let cursorStyleEl = null;
 
   function updateCursorVisibility() {
@@ -233,6 +271,7 @@
     }
   }
 
+  // 4. Update Visual Appearance based on Settings
   function updatePointerVisuals() {
     updateCursorVisibility();
 
@@ -240,52 +279,163 @@
 
     if (!settings.enabled) {
       pointerEl.style.display = "none";
+      if (rodEl) rodEl.style.display = "none";
+      if (ferruleEl) ferruleEl.style.display = "none";
       return;
     }
 
-    // If mouse coordinates haven't been captured yet, center the pointer
+    // Default center if cursor coordinates not yet available
     if (mouseX < 0 || mouseY < 0) {
       mouseX = Math.round(window.innerWidth / 2);
       mouseY = Math.round(window.innerHeight / 2);
     }
 
-    pointerEl.style.left = mouseX + "px";
-    pointerEl.style.top = mouseY + "px";
     pointerEl.style.display = "block";
 
-    // Set Image Source & Hotspot Translation
+    // Set Image Source
     if (settings.style === "custom" && settings.customImage) {
       imgEl.src = settings.customImage;
-      pointerEl.style.transform = "translate(-20%, -5%)";
-      innerEl.style.transformOrigin = "20% 5%";
     } else if (settings.style === "laser") {
       imgEl.src = chrome.runtime.getURL("hands/laser-dot.svg");
-      pointerEl.style.transform = "translate(-50%, -50%)";
-      innerEl.style.transformOrigin = "50% 50%";
     } else {
-      // 36 authentic hands from nilbuild/tinyhand
       imgEl.src = chrome.runtime.getURL(`hands/hand_${settings.style}.png`);
-      const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.4644, tipY: 0.0775 };
-      pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%)`;
-      innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
     }
 
     // Set Size
     pointerEl.style.width = settings.size + "px";
-
-    // Set Class for Style-specific animations
     pointerEl.className = `style-${settings.style}`;
+
+    startMainLoop();
   }
 
-  // 4. Click Feedback (Tap Animation + Expanding Ripple)
-  function triggerClickFeedback(x, y) {
-    if (!settings.enabled || !innerEl) return;
+  // 5. Main Animation & Physics Loop (Stick geometry, idle breathing, click tap)
+  function startMainLoop() {
+    if (!mainLoopId) {
+      mainLoopId = requestAnimationFrame(mainLoop);
+    }
+  }
 
-    // A) Tap Animation on Pointer (pivoting at fingertip)
-    innerEl.classList.add("tinyhand-tap");
-    setTimeout(() => {
-      innerEl.classList.remove("tinyhand-tap");
-    }, 140);
+  function mainLoop(timestamp) {
+    if (!settings.enabled || !isMouseInside) {
+      mainLoopId = null;
+      return;
+    }
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    // A) Calculate Target Base Point for the Stick
+    let targetBaseX = w * 0.95;
+    let targetBaseY = h + 20;
+
+    if (settings.stickOrigin === "bottom-left") {
+      targetBaseX = w * 0.05;
+      targetBaseY = h + 20;
+    } else if (settings.stickOrigin === "dynamic") {
+      // Base follows cursor horizontally with a natural offset
+      targetBaseX = Math.min(Math.max(mouseX + w * 0.22, w * 0.15), w * 0.95);
+      targetBaseY = h + 20;
+    }
+
+    if (currentBaseX < 0 || currentBaseY < 0) {
+      currentBaseX = targetBaseX;
+      currentBaseY = targetBaseY;
+    } else {
+      // Fluid spring interpolation for base
+      currentBaseX += (targetBaseX - currentBaseX) * 0.08;
+      currentBaseY += (targetBaseY - currentBaseY) * 0.08;
+    }
+
+    // B) Idle Breathing Sway Animation ("Dezente Animation im Stillstand")
+    let swayAngle = 0;
+    let breatheLift = 0;
+    if (settings.idleAnimation) {
+      idlePhase += 0.035;
+      swayAngle = Math.sin(idlePhase) * 0.75; // 0.75 deg gentle rocking
+      breatheLift = Math.cos(idlePhase * 0.7) * 1.5; // 1.5px subtle float
+    }
+
+    // C) Click Tap Spring Damping
+    pressAmount += (0 - pressAmount) * 0.18;
+    const pressDip = pressAmount * 7;
+    const pressScale = 1 - pressAmount * 0.05;
+
+    // D) Position Hand and Stick
+    if (pointerEl && imgEl && innerEl) {
+      const tipYTarget = mouseY + breatheLift;
+
+      if (settings.style === "laser") {
+        // Laser dot pointer
+        if (rodEl) rodEl.style.display = "none";
+        if (ferruleEl) ferruleEl.style.display = "none";
+        pointerEl.style.left = mouseX + "px";
+        pointerEl.style.top = mouseY + "px";
+        pointerEl.style.transform = "translate(-50%, -50%)";
+        innerEl.style.transform = `scale(${1 + pressAmount * 0.35})`;
+      } else if (settings.stickOrigin === "floating") {
+        // Free-floating pointer without stick to screen edge
+        if (rodEl) rodEl.style.display = "none";
+        if (ferruleEl) ferruleEl.style.display = "none";
+        const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.4644, tipY: 0.0775 };
+        pointerEl.style.left = mouseX + "px";
+        pointerEl.style.top = tipYTarget + "px";
+        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${swayAngle}deg)`;
+        innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
+        innerEl.style.transform = `scale(${pressScale}) rotate(${-pressAmount * 8}deg)`;
+      } else {
+        // Stick mode: stick extending from corner / bottom to hand!
+        if (rodEl) rodEl.style.display = "block";
+        if (ferruleEl) ferruleEl.style.display = "block";
+
+        const dx = mouseX - currentBaseX;
+        const dy = tipYTarget - currentBaseY;
+        const aimAngle = Math.atan2(dy, dx); // radians
+        const aimDeg = (aimAngle * 180) / Math.PI + 90;
+        const totalRot = aimDeg + swayAngle;
+
+        const m = STYLE_MEASUREMENTS[settings.style] || { tipX: 0.4644, tipY: 0.0775 };
+        pointerEl.style.left = mouseX + "px";
+        pointerEl.style.top = tipYTarget + "px";
+        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRot}deg)`;
+        innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
+        innerEl.style.transform = `translate(0, ${pressDip}px) scale(${pressScale}) rotate(${-pressAmount * 4}deg)`;
+
+        // Calculate wrist connection point along the stick
+        const wristOffset = settings.size * 1.5 * 0.27;
+        const wristX = mouseX - Math.cos(aimAngle) * wristOffset;
+        const wristY = tipYTarget - Math.sin(aimAngle) * wristOffset;
+
+        if (rodEl) {
+          rodEl.setAttribute("x1", currentBaseX);
+          rodEl.setAttribute("y1", currentBaseY);
+          rodEl.setAttribute("x2", wristX);
+          rodEl.setAttribute("y2", wristY);
+
+          const rodW = Math.max(5, Math.round(settings.size * 0.042));
+          rodEl.setAttribute("stroke-width", rodW);
+          rodEl.setAttribute("stroke", settings.style === "wood" ? "url(#rod-grad-wood)" : "url(#rod-grad-carbon)");
+
+          if (ferruleEl) {
+            ferruleEl.setAttribute("cx", wristX);
+            ferruleEl.setAttribute("cy", wristY);
+            ferruleEl.setAttribute("r", Math.round(rodW * 0.65));
+          }
+        }
+      }
+    }
+
+    // E) Render fading ink drawings on canvas
+    renderCanvasStrokes();
+
+    mainLoopId = requestAnimationFrame(mainLoop);
+  }
+
+  // 6. Click Feedback (Tap Dip Animation + Expanding Ripple)
+  function triggerClickFeedback(x, y) {
+    if (!settings.enabled) return;
+
+    // A) Tap impulse on hand
+    pressAmount = 1.0;
 
     // B) Glowing Ripple at fingertip
     const ripple = document.createElement("div");
@@ -293,7 +443,7 @@
     ripple.style.left = x + "px";
     ripple.style.top = y + "px";
 
-    // Ripple color matching drawing ink or vibrant red
+    // Ripple color matching drawing ink or vibrant purple/red
     const rippleColor = settings.color || "#8E5AF7";
     ripple.style.borderColor = rippleColor;
     ripple.style.boxShadow = `0 0 10px ${rippleColor}`;
@@ -302,9 +452,11 @@
     setTimeout(() => {
       ripple.remove();
     }, 500);
+
+    startMainLoop();
   }
 
-  // 5. Toast Feedback
+  // 7. Toast Feedback
   function showToast(msg) {
     if (!toastEl) return;
     toastEl.textContent = msg;
@@ -315,14 +467,8 @@
     }, 1600);
   }
 
-  // 6. Smooth Canvas Drawing & Ephemeral Ink Loop
-  function startRenderLoop() {
-    if (!animFrameId) {
-      animFrameId = requestAnimationFrame(renderLoop);
-    }
-  }
-
-  function renderLoop(timestamp) {
+  // 8. Ephemeral Canvas Ink Renderer
+  function renderCanvasStrokes() {
     if (!ctx || !canvasEl) return;
 
     const w = window.innerWidth;
@@ -330,7 +476,6 @@
     ctx.clearRect(0, 0, w, h);
 
     const now = performance.now();
-    let hasActiveStrokes = false;
 
     // Filter and render strokes
     strokes = strokes.filter((stroke) => {
@@ -352,8 +497,6 @@
           alpha = Math.max(0, 1.0 - fadeProgress);
         }
       }
-
-      hasActiveStrokes = true;
 
       // Draw stroke with smooth Bézier curves
       ctx.save();
@@ -383,12 +526,6 @@
 
       return true;
     });
-
-    if (hasActiveStrokes || drawing) {
-      animFrameId = requestAnimationFrame(renderLoop);
-    } else {
-      animFrameId = null;
-    }
   }
 
   function shouldDraw(e) {
@@ -399,7 +536,7 @@
     return e.shiftKey;
   }
 
-  // 7. Event Listeners
+  // 9. Event Listeners
   window.addEventListener("resize", resizeCanvas, { passive: true });
 
   window.addEventListener("mousemove", (e) => {
@@ -410,21 +547,22 @@
       updateCursorVisibility();
     }
 
-    if (settings.enabled && pointerEl) {
-      pointerEl.style.display = "block";
-      pointerEl.style.left = mouseX + "px";
-      pointerEl.style.top = mouseY + "px";
+    if (settings.enabled) {
+      if (pointerEl) pointerEl.style.display = "block";
+      startMainLoop();
     }
 
     if (drawing && currentStroke) {
       currentStroke.points.push({ x: e.clientX, y: e.clientY, time: performance.now() });
-      startRenderLoop();
+      startMainLoop();
     }
   }, { passive: true });
 
   document.addEventListener("mouseleave", () => {
     isMouseInside = false;
     if (pointerEl) pointerEl.style.display = "none";
+    if (rodEl) rodEl.style.display = "none";
+    if (ferruleEl) ferruleEl.style.display = "none";
     if (drawing) {
       drawing = false;
       currentStroke = null;
@@ -436,10 +574,9 @@
     isMouseInside = true;
     mouseX = e.clientX;
     mouseY = e.clientY;
-    if (settings.enabled && pointerEl) {
-      pointerEl.style.display = "block";
-      pointerEl.style.left = mouseX + "px";
-      pointerEl.style.top = mouseY + "px";
+    if (settings.enabled) {
+      if (pointerEl) pointerEl.style.display = "block";
+      startMainLoop();
     }
     updateCursorVisibility();
   });
@@ -455,7 +592,7 @@
         points: [{ x: e.clientX, y: e.clientY, time: performance.now() }]
       };
       strokes.push(currentStroke);
-      startRenderLoop();
+      startMainLoop();
     } else {
       // Normal click: trigger visual tap & ripple
       triggerClickFeedback(e.clientX, e.clientY);
@@ -469,7 +606,7 @@
         currentStroke.points.push({ x: e.clientX, y: e.clientY, time: performance.now() });
       }
       currentStroke = null;
-      startRenderLoop();
+      startMainLoop();
     }
   }, true);
 
@@ -484,7 +621,7 @@
     }
   });
 
-  // 8. Chrome Runtime & Storage Integration
+  // 10. Chrome Runtime & Storage Integration
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === "CLEAR_DRAWINGS") {
       strokes = [];

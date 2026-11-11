@@ -6,12 +6,14 @@
 const DEFAULT_SETTINGS = {
   enabled: false,           // On-demand default
   style: "lavender",        // Authentic TinyHand signature default
-  size: 80,                 // px
+  size: 160,                // px (authentic prominent TinyHand size)
   color: "#8E5AF7",         // Default purple matching Lavender hand
   strokeWidth: 4,           // px
   fadeDuration: 3000,       // 3 seconds auto-fade
   drawModifier: "shift",    // "shift" | "alt" | "always"
   hideNativeCursor: true,   // Hide standard mouse cursor behind hand
+  stickOrigin: "bottom-right", // "bottom-right" | "bottom-left" | "dynamic" | "floating"
+  idleAnimation: true,      // Subtle breathing animation
   customImage: null         // Data URL if uploaded
 };
 

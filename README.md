@@ -19,6 +19,13 @@ Die Erweiterung injiziert einen virtuellen Zeiger und eine transparente Zeichene
 - 👆 **Alle 36 originalen Zeigerstile von nilbuild/tinyhand 1:1 integriert:**
   - **Favoriten direkt als Kacheln:** Lavender toy (Standard), Cursor glove, Coral vinyl, Plush, Robot, Laser dot.
   - **30 weitere Stile per Dropdown wählbar:** Astronaut, Midnight, Sky, Cactus, Chocolate, Chrome, Cloud, Gingerbread, Fuzzy, Glass, Grass, Holo, Jelly, Knit, Lava, Leaf, Lemon, Low poly, Marble, Mech, Mint, Monster, Neon, Pastel, Bubblegum, Pixel, Skeleton, Space, Terrazzo, Water, Wood.
+- 📏 **Echte TinyHand-Größe (60 – 320 px):** Präsentationszeiger in jeder gewünschten Größe – von dezent bis markant und weithin sichtbar für alle Teilnehmer.
+- 🪄 **Stab-Verlauf aus der Bildschirmecke oder von unten:**
+  - **Unten rechts (Ecke):** Der Stab reicht wie bei einem echten Referenten diagonal aus der rechten unteren Ecke zum Zeiger.
+  - **Unten links (Ecke):** Für Linkshänder oder linke Bildschirmbereiche.
+  - **Dynamisch von unten:** Der Stab folgt sanft gefedert von der unteren Bildschirmkante.
+  - **Frei schwebend:** Nur die Hand ohne verlängerten Stab.
+- 🫁 **Dezente Atembewegung & Klick-Physik:** Authentische Mikrobewegungen (subtile Schwingung im Stillstand) und sanfte Federung (Spring Damping) beim Bewegen und Klicken – wie in der nativen macOS-App.
 - 🖼️ **Eigene Zeiger:** Lade direkt im Popup-Menü beliebige eigene PNG- oder SVG-Grafiken (z. B. Maskottchen, Logo, Stift) hoch – sofort aktiv ohne Neuladen!
 - ✍️ **Verblassende Freihand-Tinte (Ephemeral Ink):** Gezeichnete Linien blenden sich nach ca. 3 Sekunden sanft von selbst aus. Deine Präsentationsfolien bleiben immer aufgeräumt.
 - 🎯 **Ungestörtes Webseiten-Surfen:** Normales Klicken bedient wie gewohnt Links, Buttons und Formulare. Mit gedrückter **`Shift`-Taste** schaltest du nahtlos auf Freihand-Zeichnen um.

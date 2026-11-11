@@ -14,7 +14,7 @@
         <img src="../icons/icon-48.png" alt="TinyHand" class="logo">
         <div>
           <h1>TinyHand</h1>
-          <span class="subtitle">Tab-Share Overlay • v1.1.0</span>
+          <span class="subtitle">Tab-Share Overlay • v1.2.0</span>
         </div>
       </div>
       <label class="switch" title="TinyHand ein-/ausschalten (Alt+H)">
@@ -121,14 +121,32 @@
       <section class="section">
         <div class="section-header">
           <label class="section-label" for="range-size">Zeigergröße</label>
-          <span class="value-display" id="size-display">80 px</span>
+          <span class="value-display" id="size-display">160 px</span>
         </div>
-        <input type="range" id="range-size" min="40" max="140" step="5" value="80">
+        <input type="range" id="range-size" min="60" max="320" step="5" value="160">
 
         <div class="checkbox-row">
           <label class="checkbox-label" for="check-hide-cursor">
             <input type="checkbox" id="check-hide-cursor" checked>
             <span>Mauszeiger hinter Hand verstecken</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Section: Stab-Verlauf & Animation -->
+      <section class="section">
+        <label class="section-label" for="select-stick-origin">Stab-Verlauf (Bildschirmecke)</label>
+        <select id="select-stick-origin">
+          <option value="bottom-right" selected>Unten rechts (Ecke) • Standard</option>
+          <option value="bottom-left">Unten links (Ecke)</option>
+          <option value="dynamic">Dynamisch von unten (folgt Cursor)</option>
+          <option value="floating">Frei schwebend (ohne langen Stab)</option>
+        </select>
+
+        <div class="checkbox-row" style="margin-top: 6px;">
+          <label class="checkbox-label" for="check-idle-animation">
+            <input type="checkbox" id="check-idle-animation" checked>
+            <span>Dezente Atembewegung (Animation im Stillstand)</span>
           </label>
         </div>
       </section>

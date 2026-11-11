@@ -68,7 +68,7 @@ for item in TINYHAND_STYLES:
     url = f"https://raw.githubusercontent.com/nilbuild/tinyhand/main/assets/{filename}"
 
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "TinyHandChrome-Downloader"})
+        req = urllib.request.Request(url, headers={"User-Agent": "tinyhandChrome-Downloader"})
         with urllib.request.urlopen(req) as resp:
             data = resp.read()
 

@@ -65,11 +65,63 @@
 
     shadowRoot = hostEl.attachShadow({ mode: "open" });
 
-    // Link overlay.css
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = chrome.runtime.getURL("content/overlay.css");
-    shadowRoot.appendChild(link);
+    // Inline styles directly into Shadow Root for 100% reliable, zero-latency rendering
+    const styleEl = document.createElement("style");
+    styleEl.textContent = `
+      :host { all: initial; }
+      #tinyhand-container {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        pointer-events: none !important; z-index: 2147483647 !important;
+        overflow: hidden; user-select: none; -webkit-user-select: none;
+      }
+      #tinyhand-canvas {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none !important;
+      }
+      #tinyhand-pointer {
+        position: absolute; pointer-events: none !important;
+        will-change: transform, left, top;
+        transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.15s ease;
+        transform-origin: 0 0; display: none;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+        z-index: 2147483647 !important;
+      }
+      #tinyhand-img {
+        display: block; width: 100%; height: auto; pointer-events: none !important;
+      }
+      .style-classic { transform: translate(-18%, -2%); }
+      .style-laser { transform: translate(-50%, -50%); filter: drop-shadow(0 0 12px rgba(255, 59, 48, 0.8)) !important; }
+      .style-glove { transform: translate(-50%, -3%); }
+      .style-paw { transform: translate(-50%, -6%); }
+      .style-custom { transform: translate(-20%, -5%); }
+      .tinyhand-tap.style-classic { transform: translate(-18%, -2%) scale(0.92) rotate(-8deg) !important; }
+      .tinyhand-tap.style-laser { transform: translate(-50%, -50%) scale(1.35) !important; }
+      .tinyhand-tap.style-glove { transform: translate(-50%, -3%) scale(0.9) rotate(-5deg) !important; }
+      .tinyhand-tap.style-paw { transform: translate(-50%, -6%) scale(0.88) translateY(4px) !important; }
+      .tinyhand-tap.style-custom { transform: translate(-20%, -5%) scale(0.9) !important; }
+      .tinyhand-ripple {
+        position: absolute; border-radius: 50%; pointer-events: none !important;
+        transform: translate(-50%, -50%); box-sizing: border-box;
+        animation: tinyhand-ripple-anim 0.45s ease-out forwards;
+      }
+      @keyframes tinyhand-ripple-anim {
+        0% { width: 8px; height: 8px; opacity: 0.9; border: 3px solid rgba(255, 59, 48, 0.9); box-shadow: 0 0 6px rgba(255, 59, 48, 0.8); }
+        100% { width: 65px; height: 65px; opacity: 0; border: 1.5px solid rgba(255, 59, 48, 0.2); box-shadow: 0 0 16px rgba(255, 59, 48, 0); }
+      }
+      #tinyhand-toast {
+        position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-20px);
+        background: rgba(28, 28, 30, 0.92); color: #FFFFFF; padding: 8px 18px; border-radius: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 13px; font-weight: 500; letter-spacing: -0.1px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        pointer-events: none; opacity: 0;
+        transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 2147483647;
+      }
+      #tinyhand-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    `;
+    shadowRoot.appendChild(styleEl);
 
     // Container
     containerEl = document.createElement("div");
@@ -153,11 +205,15 @@
       return;
     }
 
-    if (isMouseInside && mouseX >= 0 && mouseY >= 0) {
-      pointerEl.style.left = mouseX + "px";
-      pointerEl.style.top = mouseY + "px";
-      pointerEl.style.display = "block";
+    // If mouse coordinates haven't been captured yet, center the pointer
+    if (mouseX < 0 || mouseY < 0) {
+      mouseX = Math.round(window.innerWidth / 2);
+      mouseY = Math.round(window.innerHeight / 2);
     }
+
+    pointerEl.style.left = mouseX + "px";
+    pointerEl.style.top = mouseY + "px";
+    pointerEl.style.display = "block";
 
     // Set Image Source
     if (settings.style === "custom" && settings.customImage) {
@@ -302,7 +358,10 @@
   window.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    isMouseInside = true;
+    if (!isMouseInside) {
+      isMouseInside = true;
+      updateCursorVisibility();
+    }
 
     if (settings.enabled && pointerEl) {
       pointerEl.style.display = "block";
@@ -336,9 +395,6 @@
       pointerEl.style.top = mouseY + "px";
     }
     updateCursorVisibility();
-  });
-      pointerEl.style.top = mouseY + "px";
-    }
   });
 
   window.addEventListener("mousedown", (e) => {

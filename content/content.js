@@ -52,6 +52,15 @@
   let idlePhase = 0;
   let pressAmount = 0;
   let mainLoopId = null;
+  let lastLoopTime = 0;
+
+  function isExtensionValid() {
+    try {
+      return typeof chrome !== "undefined" && Boolean(chrome.runtime && chrome.runtime.id);
+    } catch (_) {
+      return false;
+    }
+  }
 
   // Elements inside Shadow DOM
   let hostEl = null;
@@ -246,9 +255,6 @@
     armSvgEl.id = "tinyhand-arm-svg";
     armSvgEl.innerHTML = `
       <defs>
-        <filter id="rod-shadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow id="rod-fe-shadow" dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.38"/>
-        </filter>
         <linearGradient id="rod-grad-cylinder" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
           <stop id="rod-stop-0" offset="0%" stop-color="#121214"/>
           <stop id="rod-stop-1" offset="25%" stop-color="#262629"/>
@@ -257,9 +263,7 @@
           <stop id="rod-stop-4" offset="100%" stop-color="#060608"/>
         </linearGradient>
       </defs>
-      <g id="tinyhand-rod-group" filter="url(#rod-shadow)">
-        <line id="tinyhand-rod" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-cylinder)" stroke-width="7" stroke-linecap="round" />
-      </g>
+      <line id="tinyhand-rod" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-cylinder)" stroke-width="7" stroke-linecap="round" />
     `;
     containerEl.appendChild(armSvgEl);
 
@@ -360,20 +364,14 @@
       innerEl.style.filter = `drop-shadow(${dx}px ${dy}px ${blur}px rgba(0, 0, 0, ${op}))`;
     }
 
-    // B) Rod SVG drop-shadow filter
-    const feShadow = armSvgEl.querySelector("#rod-fe-shadow");
-    if (feShadow) {
-      if (intensity <= 0) {
-        feShadow.setAttribute("flood-opacity", "0");
-      } else {
-        const rodDy = Math.max(1, Math.round(6 * factor));
-        const rodBlur = Math.max(2, Math.round(6 * factor));
-        const rodOp = (0.15 + 0.45 * factor).toFixed(2);
-        feShadow.setAttribute("dx", "2");
-        feShadow.setAttribute("dy", String(rodDy));
-        feShadow.setAttribute("stdDeviation", String(rodBlur));
-        feShadow.setAttribute("flood-opacity", String(rodOp));
-      }
+    // B) Rod drop-shadow via GPU-accelerated CSS filter (avoids SVG objectBoundingBox clipping on vertical lines)
+    if (intensity <= 0) {
+      armSvgEl.style.filter = "none";
+    } else {
+      const rodDy = Math.max(1, Math.round(6 * factor));
+      const rodBlur = Math.max(2, Math.round(7 * factor));
+      const rodOp = (0.15 + 0.45 * factor).toFixed(2);
+      armSvgEl.style.filter = `drop-shadow(2px ${rodDy}px ${rodBlur}px rgba(0, 0, 0, ${rodOp}))`;
     }
   }
 
@@ -395,8 +393,26 @@
     if (s4) s4.setAttribute("stop-color", p.deepShadow);
   }
 
+  function handleExtensionInvalidated() {
+    settings.enabled = false;
+    isMouseInside = false;
+    if (pointerEl) pointerEl.style.display = "none";
+    if (rodEl) rodEl.style.display = "none";
+    updateCursorVisibility();
+  }
+
   // 6. Update Visual Appearance based on Settings
   function updatePointerVisuals() {
+    if (!isExtensionValid()) {
+      handleExtensionInvalidated();
+      return;
+    }
+
+    // Check if cursor is already resting inside the viewport (e.g. activated via keyboard shortcut Alt+H)
+    if (!isMouseInside && document.documentElement && document.documentElement.matches(":hover")) {
+      isMouseInside = true;
+    }
+
     updateCursorVisibility();
 
     if (!pointerEl || !imgEl || !innerEl) return;
@@ -413,15 +429,20 @@
       mouseY = Math.round(window.innerHeight / 2);
     }
 
-    pointerEl.style.display = "block";
+    pointerEl.style.display = isMouseInside ? "block" : "none";
 
     // Set Image Source
-    if (settings.style === "custom" && settings.customImage) {
-      imgEl.src = settings.customImage;
-    } else if (settings.style === "laser") {
-      imgEl.src = chrome.runtime.getURL("hands/laser-dot.svg");
-    } else {
-      imgEl.src = chrome.runtime.getURL(`hands/hand_${settings.style}.png`);
+    try {
+      if (settings.style === "custom" && settings.customImage) {
+        imgEl.src = settings.customImage;
+      } else if (settings.style === "laser") {
+        imgEl.src = chrome.runtime.getURL("hands/laser-dot.svg");
+      } else {
+        imgEl.src = chrome.runtime.getURL(`hands/hand_${settings.style}.png`);
+      }
+    } catch (_) {
+      handleExtensionInvalidated();
+      return;
     }
 
     // Set Size
@@ -438,207 +459,237 @@
   // 5. Main Animation & Physics Loop (Stick geometry, idle breathing, click tap)
   function startMainLoop() {
     if (!mainLoopId) {
+      lastLoopTime = 0;
       mainLoopId = requestAnimationFrame(mainLoop);
     }
   }
 
   function mainLoop(timestamp) {
-    if (!settings.enabled || !isMouseInside) {
+    if (!isExtensionValid()) {
+      handleExtensionInvalidated();
       mainLoopId = null;
       return;
     }
 
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const shouldRenderPointer = settings.enabled && isMouseInside;
+    const hasPendingStrokes = settings.enabled && strokes.length > 0;
 
-    // Track frame velocity for smooth movement animation
-    if (prevFrameX < 0 || prevFrameY < 0) {
+    if (!shouldRenderPointer && !hasPendingStrokes) {
+      mainLoopId = null;
+      lastLoopTime = 0;
+      return;
+    }
+
+    // Frame-rate independent delta time normalized to 60Hz (1.0 = 16.67ms; ~0.5 on 120Hz ProMotion)
+    if (!lastLoopTime) lastLoopTime = timestamp;
+    const rawDt = timestamp - lastLoopTime;
+    lastLoopTime = timestamp;
+    const dtScale = Math.min(3.0, Math.max(0.15, (rawDt > 0 ? rawDt : 16.67) / 16.67));
+    const smoothK = (rate60) => 1 - Math.pow(1 - rate60, dtScale);
+
+    if (shouldRenderPointer) {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      // Track normalized velocity (px per 60Hz frame) for consistent motion across 60Hz/120Hz displays
+      if (prevFrameX < 0 || prevFrameY < 0) {
+        prevFrameX = mouseX;
+        prevFrameY = mouseY;
+      }
+      const instVx = (mouseX - prevFrameX) / dtScale;
+      const instVy = (mouseY - prevFrameY) / dtScale;
       prevFrameX = mouseX;
       prevFrameY = mouseY;
-    }
-    const rawVx = mouseX - prevFrameX;
-    const rawVy = mouseY - prevFrameY;
-    prevFrameX = mouseX;
-    prevFrameY = mouseY;
 
-    smoothedVx += (rawVx - smoothedVx) * 0.28;
-    smoothedVy += (rawVy - smoothedVy) * 0.28;
-    const currentSpeed = Math.hypot(smoothedVx, smoothedVy);
+      const velK = smoothK(0.28);
+      smoothedVx += (instVx - smoothedVx) * velK;
+      smoothedVy += (instVy - smoothedVy) * velK;
+      const currentSpeed = Math.hypot(smoothedVx, smoothedVy);
 
-    const motionFactor = settings.idleAnimation !== false ? ((settings.animMotionStrength ?? 100) / 100) : 0;
-    const breatheFactor = settings.idleAnimation !== false ? ((settings.animBreatheStrength ?? 100) / 100) : 0;
+      const motionFactor = settings.idleAnimation !== false ? ((settings.animMotionStrength ?? 100) / 100) : 0;
+      const breatheFactor = settings.idleAnimation !== false ? ((settings.animBreatheStrength ?? 100) / 100) : 0;
 
-    // A) Calculate Target Base Point for the Stick
-    let targetBaseX = w * 0.95;
-    let targetBaseY = h + 20;
-
-    if (settings.stickOrigin === "bottom-right") {
-      // Fest in der unteren rechten Ecke verankert (authentisch wie in TinyHand macOS)
-      targetBaseX = w * 0.94;
-      targetBaseY = h + 20;
-    } else if (settings.stickOrigin === "bottom-left") {
-      // Fest in der unteren linken Ecke verankert
-      targetBaseX = w * 0.06;
-      targetBaseY = h + 20;
-    } else if (settings.stickOrigin === "dynamic") {
-      // Dynamisch von unten: Basis folgt dem Cursor horizontal unterhalb des Bildschirms
-      // Mit subtiler, natürlicher Schrägneigung (max ~5° an den Bildschirmrändern)
+      // A) Calculate Target Base Point for the Stick
       const normX = Math.min(1, Math.max(0, mouseX / (w || 1)));
-      const subtleTilt = (normX - 0.5) * Math.min(60, w * 0.05);
-      targetBaseX = mouseX - subtleTilt;
-      targetBaseY = h + 20;
-    }
+      // Deep vertical pivot clearance prevents abrupt angles or 180° flips near the bottom of the screen
+      const baseClearance = Math.max(140, Math.round(settings.size * 0.9 + 55));
+      let targetBaseX = w * 0.36 + normX * (w * 0.58);
+      const targetBaseY = h + baseClearance;
 
-    if (currentBaseX < 0 || currentBaseY < 0) {
-      currentBaseX = targetBaseX;
-      currentBaseY = targetBaseY;
-    } else {
-      // Schnelle, stabile Verfolgung: Verhindert unnatürliches Hinterherhinken und Rotieren beim Bewegen
-      const followSpeed = settings.stickOrigin === "dynamic" ? 0.35 : 0.25;
-      currentBaseX += (targetBaseX - currentBaseX) * followSpeed;
-      currentBaseY += (targetBaseY - currentBaseY) * followSpeed;
-    }
-
-    // B) Idle Breathing & Movement Animation ("Dezente Animation im Stillstand & beim Bewegen")
-    let swayAngle = 0;
-    let breatheLift = 0;
-    let moveTilt = 0;
-    let moveLift = 0;
-    let motionLag = 0;
-
-    if (breatheFactor > 0) {
-      // 1. Idle Breathing: dominant when still, smoothly yields when in motion
-      idlePhase += 0.035;
-      const idleWeight = Math.max(0, 1 - currentSpeed * 0.25); // 1.0 when still, 0 when moving
-      swayAngle = Math.sin(idlePhase) * (0.75 * idleWeight) * breatheFactor;
-      breatheLift = Math.cos(idlePhase * 0.7) * (1.5 * idleWeight) * breatheFactor;
-    }
-
-    if (motionFactor > 0) {
-      // 2. Movement Inertia Tilt (subtle rotational lag trailing mouse movement)
-      const targetInertia = Math.max(-4.0, Math.min(4.0, -smoothedVx * 0.15)) * motionFactor;
-      inertiaAngle += (targetInertia - inertiaAngle) * 0.20;
-
-      // 3. Movement Sway / Bobbing & Lift (subtle organic motion rhythm)
-      if (currentSpeed > 0.4) {
-        movePhase += Math.min(currentSpeed * 0.04, 0.22);
+      if (settings.stickOrigin === "bottom-right") {
+        // Unten rechts: wandert entlang des unteren Bildschirmrands mit (rechtsseitig orientiert)
+        targetBaseX = w * 0.36 + normX * (w * 0.58);
+      } else if (settings.stickOrigin === "bottom-left") {
+        // Unten links: wandert entlang des unteren Bildschirmrands mit (linksseitig orientiert)
+        targetBaseX = w * 0.06 + normX * (w * 0.58);
+      } else if (settings.stickOrigin === "bottom-right-fixed") {
+        // Feste Ecke unten rechts
+        targetBaseX = w * 0.94;
+      } else if (settings.stickOrigin === "bottom-left-fixed") {
+        // Feste Ecke unten links
+        targetBaseX = w * 0.06;
+      } else if (settings.stickOrigin === "dynamic") {
+        // Dynamisch von unten: Basis wandert mittig mit dem Cursor und neigt sich sanft zu den Rändern
+        const edgeTilt = (normX - 0.5) * Math.min(180, w * 0.14);
+        targetBaseX = mouseX - edgeTilt;
       }
-      moveTilt = Math.sin(movePhase) * Math.min(currentSpeed * 0.05, 1.2) * motionFactor;
-      moveLift = Math.cos(movePhase * 0.8) * Math.min(currentSpeed * 0.04, 1.5) * motionFactor;
 
-      // 4. Subtle elastic stretch along the stick (1-3.5px)
-      motionLag = Math.min(3.5, currentSpeed * 0.06) * motionFactor;
-    } else {
-      inertiaAngle = 0;
-    }
-
-    // C) Click Tap Spring Damping
-    pressAmount += (0 - pressAmount) * 0.18;
-    const pressDip = pressAmount * 7;
-    const pressScale = 1 - pressAmount * 0.05;
-
-    // D) Position Hand and Stick
-    if (pointerEl && imgEl && innerEl) {
-      const tipYTarget = mouseY + breatheLift + moveLift;
-      const motionAngle = inertiaAngle + moveTilt;
-      const totalExtraAngle = swayAngle + motionAngle;
-
-      if (settings.style === "laser") {
-        // Laser dot pointer
-        if (rodEl) rodEl.style.display = "none";
-        pointerEl.style.left = mouseX + "px";
-        pointerEl.style.top = mouseY + "px";
-        pointerEl.style.transformOrigin = "50% 50%";
-        pointerEl.style.transform = "translate(-50%, -50%)";
-        const laserScale = (1 + pressAmount * 0.35) * (1 + Math.min(0.2, currentSpeed * 0.008));
-        innerEl.style.transform = `scale(${laserScale})`;
-      } else if (settings.stickOrigin === "floating") {
-        // Free-floating pointer without stick to screen edge
-        if (rodEl) rodEl.style.display = "none";
-        const m = getStyleMeasurements();
-
-        // User customizable tilt angle + dynamic motion/screen tilt
-        const baseAngle = Number(settings.floatingAngle ?? -15);
-        let dynamicTilt = 0;
-        if (settings.floatingDynamic !== false) {
-          // Subtle screen position tilt (-10° on left to +10° on right)
-          const screenTilt = ((mouseX / w) - 0.5) * 20;
-          // Movement velocity tilt
-          const velocityTilt = Math.max(-8, Math.min(8, -smoothedVx * 0.16)) * (motionFactor || 1);
-          dynamicTilt = screenTilt + velocityTilt;
-        }
-
-        const finalAngle = baseAngle + dynamicTilt + totalExtraAngle;
-
-        pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
-        pointerEl.style.left = mouseX + "px";
-        pointerEl.style.top = tipYTarget + "px";
-        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${finalAngle}deg)`;
-        innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
-        innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 8 + motionAngle * 0.3}deg)`;
+      if (currentBaseX < 0 || currentBaseY < 0) {
+        currentBaseX = targetBaseX;
+        currentBaseY = targetBaseY;
       } else {
-        // Stick mode: single continuous rigid stick extending from corner / bottom directly into hand cuff!
-        if (rodEl) rodEl.style.display = "block";
+        // Responsive base tracking so the rod never falls far behind fast cursor sweeps
+        const rate60 = motionFactor === 0 ? 0.9 : (settings.stickOrigin === "dynamic" ? 0.72 : 0.55);
+        const followK = smoothK(rate60);
+        currentBaseX += (targetBaseX - currentBaseX) * followK;
+        currentBaseY += (targetBaseY - currentBaseY) * followK;
+      }
 
-        const m = getStyleMeasurements();
-        const handH = settings.size / (m.aspect || 1.4);
+      // B) Idle Breathing & Movement Animation ("Dezente Animation im Stillstand & beim Bewegen")
+      let swayAngle = 0;
+      let breatheLift = 0;
+      let idleBaseSway = 0;
+      let moveTilt = 0;
+      let moveLift = 0;
+      let motionLag = 0;
+      let inertiaBaseLag = 0;
 
-        // Local vector from cuff to tip in unrotated image pixels
-        const localDx = (m.tipX - m.cuffX) * settings.size;
-        const localDy = (m.tipY - m.cuffY) * handH;
+      const idleWeight = Math.max(0, 1 - currentSpeed * 0.25); // 1.0 when still, 0 when moving
 
-        // Iterative collinear alignment:
-        // Ensures the rod enters the cuff at a true 90° perpendicular angle,
-        // while the fingertip stays exactly at (mouseX, tipYTarget).
-        let rodAngle = Math.atan2(tipYTarget - currentBaseY, mouseX - currentBaseX);
-        let handRad = rodAngle + Math.PI / 2;
-        let cuffScreenX = mouseX;
-        let cuffScreenY = tipYTarget;
+      if (breatheFactor > 0) {
+        idlePhase += 0.035 * dtScale;
+        swayAngle = Math.sin(idlePhase) * (0.75 * idleWeight) * breatheFactor;
+        breatheLift = Math.cos(idlePhase * 0.7) * (1.5 * idleWeight) * breatheFactor;
+        idleBaseSway = Math.sin(idlePhase * 0.85) * (9 * idleWeight) * breatheFactor;
+      }
 
-        for (let iter = 0; iter < 2; iter++) {
-          const offX = localDx * Math.cos(handRad) - localDy * Math.sin(handRad);
-          const offY = localDx * Math.sin(handRad) + localDy * Math.cos(handRad);
-          cuffScreenX = mouseX - offX;
-          cuffScreenY = tipYTarget - offY;
-          rodAngle = Math.atan2(cuffScreenY - currentBaseY, cuffScreenX - currentBaseX);
-          handRad = rodAngle + Math.PI / 2;
+      if (motionFactor > 0) {
+        const targetInertia = Math.max(-4.0, Math.min(4.0, -smoothedVx * 0.15)) * motionFactor;
+        inertiaAngle += (targetInertia - inertiaAngle) * smoothK(0.20);
+
+        if (currentSpeed > 0.4) {
+          movePhase += Math.min(currentSpeed * 0.04, 0.22) * dtScale;
         }
+        moveTilt = Math.sin(movePhase) * Math.min(currentSpeed * 0.05, 1.2) * motionFactor;
+        moveLift = Math.cos(movePhase * 0.8) * Math.min(currentSpeed * 0.04, 1.5) * motionFactor;
+        motionLag = Math.min(3.5, currentSpeed * 0.06) * motionFactor;
 
-        const totalRotDeg = (handRad * 180) / Math.PI;
+        // Bounded base lag in stick mode keeps hand + rod locked as one rigid unit without wild spinning
+        inertiaBaseLag = Math.max(-36, Math.min(36, -smoothedVx * 0.18)) * motionFactor;
+      } else {
+        inertiaAngle = 0;
+      }
 
-        pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
-        pointerEl.style.left = mouseX + "px";
-        pointerEl.style.top = tipYTarget + "px";
-        pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRotDeg}deg)`;
-        innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
-        innerEl.style.transform = `scale(${pressScale})`;
+      // C) Click Tap Spring Damping
+      pressAmount += (0 - pressAmount) * smoothK(0.18);
+      if (pressAmount < 0.001) pressAmount = 0;
+      const pressDip = pressAmount * 7;
+      const pressScale = 1 - pressAmount * 0.05;
 
-        // Push 8px into the cuff opening so the rod seamlessly enters the sleeve behind the cuff
-        const rodEndX = cuffScreenX + Math.cos(rodAngle) * 8;
-        const rodEndY = cuffScreenY + Math.sin(rodAngle) * 8;
+      // D) Position Hand and Stick
+      if (pointerEl && imgEl && innerEl) {
+        const tipYTarget = mouseY + breatheLift + moveLift;
+        const motionAngle = inertiaAngle + moveTilt;
+        const totalExtraAngle = swayAngle + motionAngle;
 
-        const rodW = settings.rodWidth !== undefined ? Number(settings.rodWidth) : Math.max(5, Math.round(settings.size * 0.045));
+        if (settings.style === "laser") {
+          // Laser dot pointer
+          if (rodEl) rodEl.style.display = "none";
+          pointerEl.style.left = mouseX + "px";
+          pointerEl.style.top = mouseY + "px";
+          pointerEl.style.transformOrigin = "50% 50%";
+          pointerEl.style.transform = "translate(-50%, -50%)";
+          const laserScale = (1 + pressAmount * 0.35) * (1 + Math.min(0.2, currentSpeed * 0.008));
+          innerEl.style.transform = `scale(${laserScale})`;
+        } else if (settings.stickOrigin === "floating") {
+          // Free-floating pointer without stick to screen edge
+          if (rodEl) rodEl.style.display = "none";
+          const m = getStyleMeasurements();
 
-        // 1. Position Main 3D Cylindrical Rod (uniform constant stroke-width)
-        rodEl.setAttribute("x1", currentBaseX);
-        rodEl.setAttribute("y1", currentBaseY);
-        rodEl.setAttribute("x2", rodEndX);
-        rodEl.setAttribute("y2", rodEndY);
-        rodEl.setAttribute("stroke-width", rodW);
+          // User customizable tilt angle + dynamic motion/screen tilt
+          const baseAngle = Number(settings.floatingAngle ?? -15);
+          let dynamicTilt = 0;
+          if (settings.floatingDynamic !== false) {
+            const screenTilt = ((mouseX / (w || 1)) - 0.5) * 20;
+            const velocityTilt = Math.max(-8, Math.min(8, -smoothedVx * 0.16)) * (motionFactor || 1);
+            dynamicTilt = screenTilt + velocityTilt;
+          }
 
-        // 2. Normal vector strictly perpendicular to the rod axis
-        const nx = -Math.sin(rodAngle);
-        const ny = Math.cos(rodAngle);
+          const finalAngle = baseAngle + dynamicTilt + totalExtraAngle;
 
-        // 3. Orient the 3D Cylindrical Gradient across the rod's diameter
-        if (rodGradCylEl) {
-          const midX = (currentBaseX + rodEndX) / 2;
-          const midY = (currentBaseY + rodEndY) / 2;
-          const halfW = rodW / 2;
-          rodGradCylEl.setAttribute("x1", midX - nx * halfW);
-          rodGradCylEl.setAttribute("y1", midY - ny * halfW);
-          rodGradCylEl.setAttribute("x2", midX + nx * halfW);
-          rodGradCylEl.setAttribute("y2", midY + ny * halfW);
+          pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
+          pointerEl.style.left = mouseX + "px";
+          pointerEl.style.top = tipYTarget + "px";
+          pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${finalAngle}deg)`;
+          innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
+          innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 8 + motionAngle * 0.3}deg)`;
+        } else {
+          // Stick mode: single continuous rigid stick extending from bottom/corner directly into hand cuff
+          if (rodEl) rodEl.style.display = "block";
+
+          const m = getStyleMeasurements();
+          const handH = settings.size / (m.aspect || 1.4);
+
+          // Scale cuff-to-tip vector with click pressScale so cuff remains locked to rod during tap
+          const localDx = (m.tipX - m.cuffX) * settings.size * pressScale;
+          const localDy = (m.tipY - m.cuffY) * handH * pressScale;
+
+          const renderBaseX = currentBaseX + idleBaseSway + inertiaBaseLag;
+          const renderBaseY = currentBaseY;
+
+          // Iterative collinear 90° alignment: keeps cuff centered perpendicularly on the rod while fingertip stays locked at cursor
+          let rodAngle = Math.atan2(Math.min(-24, tipYTarget - renderBaseY), mouseX - renderBaseX);
+          let handRad = rodAngle + Math.PI / 2;
+          let cuffScreenX = mouseX;
+          let cuffScreenY = tipYTarget;
+
+          for (let iter = 0; iter < 4; iter++) {
+            const offX = localDx * Math.cos(handRad) - localDy * Math.sin(handRad);
+            const offY = localDx * Math.sin(handRad) + localDy * Math.cos(handRad);
+            cuffScreenX = mouseX - offX;
+            cuffScreenY = tipYTarget - offY;
+            const safeDy = Math.min(-24, cuffScreenY - renderBaseY);
+            rodAngle = Math.atan2(safeDy, cuffScreenX - renderBaseX);
+            handRad = rodAngle + Math.PI / 2;
+          }
+
+          const totalRotDeg = (handRad * 180) / Math.PI;
+
+          pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
+          pointerEl.style.left = mouseX + "px";
+          pointerEl.style.top = tipYTarget + "px";
+          pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRotDeg}deg)`;
+          innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
+          innerEl.style.transform = `scale(${pressScale})`;
+
+          // Scale rod insertion cleanly behind cuff sleeve for all hand sizes (60-320px)
+          const insertDepth = Math.max(4, Math.min(12, settings.size * 0.05));
+          const rodEndX = cuffScreenX + Math.cos(rodAngle) * insertDepth;
+          const rodEndY = cuffScreenY + Math.sin(rodAngle) * insertDepth;
+
+          const rodW = settings.rodWidth !== undefined ? Number(settings.rodWidth) : Math.max(5, Math.round(settings.size * 0.045));
+
+          // 1. Position Main 3D Cylindrical Rod (uniform constant stroke-width)
+          rodEl.setAttribute("x1", renderBaseX);
+          rodEl.setAttribute("y1", renderBaseY);
+          rodEl.setAttribute("x2", rodEndX);
+          rodEl.setAttribute("y2", rodEndY);
+          rodEl.setAttribute("stroke-width", rodW);
+
+          // 2. Normal vector strictly perpendicular to the rod axis
+          const nx = -Math.sin(rodAngle);
+          const ny = Math.cos(rodAngle);
+
+          // 3. Orient the 3D Cylindrical Gradient across the rod's diameter
+          if (rodGradCylEl) {
+            const midX = (renderBaseX + rodEndX) / 2;
+            const midY = (renderBaseY + rodEndY) / 2;
+            const halfW = rodW / 2;
+            rodGradCylEl.setAttribute("x1", midX - nx * halfW);
+            rodGradCylEl.setAttribute("y1", midY - ny * halfW);
+            rodGradCylEl.setAttribute("x2", midX + nx * halfW);
+            rodGradCylEl.setAttribute("y2", midY + ny * halfW);
+          }
         }
       }
     }
@@ -756,11 +807,14 @@
   }
 
   // 9. Event Listeners
-  window.addEventListener("resize", resizeCanvas, { passive: true });
+  function handleCursorMove(clientX, clientY) {
+    if (!isExtensionValid()) {
+      handleExtensionInvalidated();
+      return;
+    }
 
-  window.addEventListener("mousemove", (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+    mouseX = clientX;
+    mouseY = clientY;
     if (!isMouseInside) {
       isMouseInside = true;
       updateCursorVisibility();
@@ -772,12 +826,16 @@
     }
 
     if (drawing && currentStroke) {
-      currentStroke.points.push({ x: e.clientX, y: e.clientY, time: performance.now() });
+      const pts = currentStroke.points;
+      const lastPt = pts[pts.length - 1];
+      if (!lastPt || lastPt.x !== clientX || lastPt.y !== clientY) {
+        pts.push({ x: clientX, y: clientY, time: performance.now() });
+      }
       startMainLoop();
     }
-  }, { passive: true });
+  }
 
-  document.addEventListener("mouseleave", () => {
+  function hidePointerOnExit() {
     isMouseInside = false;
     if (pointerEl) pointerEl.style.display = "none";
     if (rodEl) rodEl.style.display = "none";
@@ -786,6 +844,27 @@
       currentStroke = null;
     }
     updateCursorVisibility();
+  }
+
+  window.addEventListener("resize", () => {
+    resizeCanvas();
+    currentBaseY = -1;
+  }, { passive: true });
+
+  window.addEventListener("mousemove", (e) => {
+    handleCursorMove(e.clientX, e.clientY);
+  }, { capture: true, passive: true });
+
+  window.addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "touch") {
+      handleCursorMove(e.clientX, e.clientY);
+    }
+  }, { capture: true, passive: true });
+
+  document.addEventListener("mouseleave", hidePointerOnExit);
+  window.addEventListener("blur", hidePointerOnExit);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) hidePointerOnExit();
   });
 
   document.addEventListener("mouseenter", (e) => {
@@ -807,6 +886,7 @@
     if (e.button !== 0) return; // Left mouse click only
 
     if (shouldDraw(e)) {
+      e.preventDefault(); // Prevent accidental text selection while drawing ink
       drawing = true;
       currentStroke = {
         color: settings.color,
@@ -865,6 +945,8 @@
     }
     if (changes.stickOrigin) {
       currentBaseX = -1;
+      currentBaseY = -1;
+    } else if (changes.size) {
       currentBaseY = -1;
     }
     updatePointerVisuals();

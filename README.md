@@ -2,7 +2,7 @@
 
 # tinyhandChrome
 
-[![Latest release](https://img.shields.io/badge/release-v1.3.3-blue.svg)](https://github.com/Schmitt-A/tinyhandChrome/releases)
+[![Latest release](https://img.shields.io/badge/release-v1.4.0-blue.svg)](https://github.com/Schmitt-A/tinyhandChrome/releases)
 [![Platform: Chrome / Chromium](https://img.shields.io/badge/platform-Chrome%20%7C%20Brave%20%7C%20Edge-lightgrey.svg)](https://github.com/Schmitt-A/tinyhandChrome)
 [![Manifest V3](https://img.shields.io/badge/manifest-v3-success.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -84,10 +84,11 @@ git clone https://github.com/Schmitt-A/tinyhandChrome.git tinyhandChrome
 - 📐 **Rechtwinklige Stabgeometrie (90°):**  
   Der Zeigestab tritt stets exakt senkrecht und zentriert in die Handmanschette ein – kein krummes oder schiefes Aufsitzen mehr bei schrägen Fingerwinkeln.
 
-- 🪄 **Vier flexible Verankerungs-Modi:**
-  - **Unten rechts (Ecke):** Klassischer Referenten-Zeigestock aus der rechten unteren Bildschirmecke.
-  - **Unten links (Ecke):** Zeigestock aus der linken unteren Bildschirmecke.
-  - **Dynamisch von unten:** Die Basis wandert am unteren Bildschirmrand mit dem Cursor mit und neigt sich organisch mit der Mausbewegung.
+- 🪄 **Flexible Verankerungs-Modi:**
+  - **Unten rechts (wandert am Rand mit):** Klassische Rechtsausrichtung – die Stabbasis gleitet geschmeidig am unteren Bildschirmrand mit dem Cursor mit.
+  - **Unten links (wandert am Rand mit):** Gespiegelte Linksausrichtung mit mitwandernder Stabbasis entlang des unteren Rands.
+  - **Dynamisch von unten:** Die Basis wandert direkt mittig unter dem Cursor mit und neigt sich leicht zu den Bildschirmrändern hin.
+  - **Unten rechts / links (feste Ecke):** Optional fest verankert in einer Bildschirmecke ohne Mitwandern.
   - **Frei schwebend:** Hand ohne langen Stab mit stufenlos einstellbarem Grundneigungswinkel (-60° bis +60°) und automatischer Bewegungsneigung.
 
 - 📏 **Stufenlose Skalierung & 3D-Tiefe:**

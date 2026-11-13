@@ -105,7 +105,7 @@ chrome.commands.onCommand.addListener(async (command) => {
       chrome.tabs.sendMessage(tab.id, { type: "CLEAR_DRAWINGS" }).catch(() => {});
     }
   } else if (command === "switch-style") {
-    const { style = "classic" } = await chrome.storage.local.get("style");
+    const { style = "lavender" } = await chrome.storage.local.get("style");
     const currentIndex = STYLES.indexOf(style);
     const nextIndex = (currentIndex + 1) % STYLES.length;
     const nextStyle = STYLES[nextIndex];

@@ -1,0 +1,317 @@
+{
+  "extName": {
+    "message": "tinyhandChrome"
+  },
+  "extDescription": {
+    "message": "Präsentations-Zeiger, Fokus-Spotlight & Zeichen-Tinte für Chrome-Tab Bildschirmfreigaben (BigBlueButton, Google Meet, Zoom)"
+  },
+  "actionTitle": {
+    "message": "tinyhandChrome Einstellungen"
+  },
+  "cmdToggleDesc": {
+    "message": "tinyhandChrome Zeiger ein-/ausschalten"
+  },
+  "cmdClearDesc": {
+    "message": "Alle Zeichnungen sofort leeren"
+  },
+  "cmdSwitchDesc": {
+    "message": "Nächsten Favoriten-Zeigerstil wählen"
+  },
+  "cmdSpotlightDesc": {
+    "message": "Fokus-Spotlight ein-/ausschalten"
+  },
+  "popupSubtitle": {
+    "message": "Tab-Share Overlay • v1.5.0"
+  },
+  "toggleMasterTitle": {
+    "message": "tinyhandChrome ein-/ausschalten (Alt+H)"
+  },
+  "sectionStyleLabel": {
+    "message": "Zeiger-Stil"
+  },
+  "styleCustom": {
+    "message": "Eigenes"
+  },
+  "styleAllCatalog": {
+    "message": "Alle 36"
+  },
+  "gallerySummary": {
+    "message": "Alle 36 TinyHand Zeiger durchsuchen"
+  },
+  "gallerySearchPlaceholder": {
+    "message": "Zeiger suchen (z. B. Astro, Neon, Wood)..."
+  },
+  "filterAll": {
+    "message": "Alle"
+  },
+  "filterHands": {
+    "message": "Klassik"
+  },
+  "filterMaterial": {
+    "message": "Material"
+  },
+  "filterCreative": {
+    "message": "Kreativ"
+  },
+  "galleryStarHint": {
+    "message": "Mit ★ markierte Zeiger wechseln bei Alt+S"
+  },
+  "galleryEmpty": {
+    "message": "Kein Zeiger passt zur Suche."
+  },
+  "customActiveText": {
+    "message": "Eigenes Bild aktiv"
+  },
+  "btnRemove": {
+    "message": "Entfernen"
+  },
+  "uploadSizeError": {
+    "message": "Bitte wähle ein Bild unter 2 MB."
+  },
+  "calibrationTipMode": {
+    "message": "Klickspitze"
+  },
+  "calibrationCuffMode": {
+    "message": "Stab-Ansatz"
+  },
+  "calibrationFlipX": {
+    "message": "Grafik horizontal spiegeln"
+  },
+  "calibrationHintTip": {
+    "message": "Klicke oder ziehe auf das Bild, um den Klickpunkt zu kalibrieren."
+  },
+  "calibrationHintCuff": {
+    "message": "Klicke oder ziehe auf das Bild, wo der Zeigestab ansetzen soll."
+  },
+  "btnDefault": {
+    "message": "Standard"
+  },
+  "labelSize": {
+    "message": "Zeigergröße"
+  },
+  "labelRodWidth": {
+    "message": "Stabbreite"
+  },
+  "labelRodTheme": {
+    "message": "Stab-Optik & Manschette"
+  },
+  "rodThemeAuto": {
+    "message": "Passend zum Zeiger (Auto)"
+  },
+  "rodThemeCarbon": {
+    "message": "Obsidian Carbon"
+  },
+  "rodThemeWood": {
+    "message": "Edles Holz & Messing"
+  },
+  "rodThemeWhite": {
+    "message": "Lack-Weiß & Silber"
+  },
+  "rodThemeSteel": {
+    "message": "Gebürstetes Aluminium"
+  },
+  "labelShadow": {
+    "message": "Schatten & 3D-Tiefe"
+  },
+  "checkHideCursor": {
+    "message": "Mauszeiger hinter Hand verstecken"
+  },
+  "checkClickRipple": {
+    "message": "Klick-Ripple (Links / Rechts / Doppelklick)"
+  },
+  "checkSpotlight": {
+    "message": "Fokus-Spotlight (Umgebung abdunkeln)"
+  },
+  "labelSpotlightRadius": {
+    "message": "Fokus-Radius"
+  },
+  "labelSpotlightOpacity": {
+    "message": "Abdunklung"
+  },
+  "labelStickOrigin": {
+    "message": "Stab-Verlauf (Verankerung)"
+  },
+  "originBottomRight": {
+    "message": "Unten rechts (wandert am Rand mit) • Standard"
+  },
+  "originBottomLeft": {
+    "message": "Unten links (wandert am Rand mit)"
+  },
+  "originDynamic": {
+    "message": "Dynamisch von unten (mittig mitwandernd)"
+  },
+  "originBottomRightFixed": {
+    "message": "Unten rechts (feste Ecke)"
+  },
+  "originBottomLeftFixed": {
+    "message": "Unten links (feste Ecke)"
+  },
+  "originFloating": {
+    "message": "Frei schwebend (ohne langen Stab)"
+  },
+  "labelFloatingAngle": {
+    "message": "Zeiger-Neigung"
+  },
+  "checkFloatingDynamic": {
+    "message": "Dynamisch neigen (folgt Bewegung & Position)"
+  },
+  "checkIdleAnim": {
+    "message": "Dezente Animationen aktivieren"
+  },
+  "labelAnimMotion": {
+    "message": "Bewegungs-Dynamik & Trägheit"
+  },
+  "labelAnimBreathe": {
+    "message": "Atmen & Schweben im Stillstand"
+  },
+  "sectionInkLabel": {
+    "message": "Zeichnen & Markieren"
+  },
+  "toolFreehand": {
+    "message": "Freihand"
+  },
+  "toolArrow": {
+    "message": "Pfeil"
+  },
+  "toolRect": {
+    "message": "Rahmen"
+  },
+  "labelStrokeWidth": {
+    "message": "Strichstärke"
+  },
+  "widthThin": {
+    "message": "Dünn (3px)"
+  },
+  "widthMedium": {
+    "message": "Mittel (4px)"
+  },
+  "widthThick": {
+    "message": "Dick (7px)"
+  },
+  "labelFadeDuration": {
+    "message": "Verblassen"
+  },
+  "fade2s": {
+    "message": "2 Sekunden"
+  },
+  "fade3s": {
+    "message": "3 Sekunden"
+  },
+  "fade5s": {
+    "message": "5 Sekunden"
+  },
+  "fadePermanent": {
+    "message": "Dauerhaft"
+  },
+  "labelDrawModifier": {
+    "message": "Zeichnen auslösen durch"
+  },
+  "modShift": {
+    "message": "Shift + Maus ziehen"
+  },
+  "modAlt": {
+    "message": "Alt/Option + Maus ziehen"
+  },
+  "modAlways": {
+    "message": "Immer bei Klick (Präsentationsmodus)"
+  },
+  "btnUndoDrawing": {
+    "message": "Rückgängig"
+  },
+  "btnClearDrawings": {
+    "message": "Alles leeren"
+  },
+  "sectionAutoStart": {
+    "message": "Website-Automatik"
+  },
+  "autoDomainToggle": {
+    "message": "Auf $HOST$ automatisch starten",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  },
+  "autoDomainUnavailable": {
+    "message": "Auf internen Browser-Seiten nicht verfügbar"
+  },
+  "sectionShortcuts": {
+    "message": "Tastenkürzel"
+  },
+  "scToggle": {
+    "message": "Zeiger An / Aus"
+  },
+  "scSpotlight": {
+    "message": "Fokus-Spotlight"
+  },
+  "scClear": {
+    "message": "Zeichnungen leeren"
+  },
+  "scSwitch": {
+    "message": "Favoriten wechseln"
+  },
+  "scDraw": {
+    "message": "Form / Freihand zeichnen"
+  },
+  "scUndo": {
+    "message": "Letzte rückgängig"
+  },
+  "scDragHint": {
+    "message": "Shift + Ziehen"
+  },
+  "scUnassigned": {
+    "message": "Nicht belegt"
+  },
+  "btnConfigureShortcuts": {
+    "message": "Tastenkombinationen anpassen"
+  },
+  "shortcutsHint": {
+    "message": "Öffnet die Chrome-Tastenverwaltung, um Shortcuts frei umzubelegen."
+  },
+  "btnResetDefaults": {
+    "message": "Standardwerte herstellen"
+  },
+  "resetConfirmText": {
+    "message": "Einstellungen wirklich zurücksetzen?"
+  },
+  "btnConfirmYes": {
+    "message": "Zurücksetzen"
+  },
+  "btnCancel": {
+    "message": "Abbrechen"
+  },
+  "toastActivated": {
+    "message": "tinyhandChrome: Aktiviert (Shift+Ziehen zum Zeichnen)"
+  },
+  "toastDeactivated": {
+    "message": "tinyhandChrome: Deaktiviert"
+  },
+  "toastCleared": {
+    "message": "Zeichnungen gelöscht"
+  },
+  "toastUndo": {
+    "message": "Letzte Markierung rückgängig"
+  },
+  "toastStyle": {
+    "message": "tinyhandChrome Stil: $STYLE$",
+    "placeholders": {
+      "style": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastSpotlightOn": {
+    "message": "Fokus-Spotlight: Ein"
+  },
+  "toastSpotlightOff": {
+    "message": "Fokus-Spotlight: Aus"
+  },
+  "toastAutoDomain": {
+    "message": "tinyhandChrome: Auto-Start für $HOST$",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  }
+}

@@ -1,43 +1,32 @@
 /**
- * TinyHand for Chrome - Content Script
- * Injects isolated Shadow DOM overlay with pointing hand, stick from screen corner/bottom,
- * subtle breathing animation, click ripple, and ephemeral canvas ink.
+ * tinyhandChrome - Content Script
+ * Injects isolated Closed Shadow DOM overlay (in top frame) or lightweight coordinate bridge (in iframes),
+ * with smooth bottom-edge stick mechanics, metallic ferrule, focus spotlight, and shape/freehand canvas ink.
  */
 
 (function () {
-  // Prevent multiple injections
   if (window.__TINYHAND_INITIALIZED__) return;
   window.__TINYHAND_INITIALIZED__ = true;
 
-  // Settings state
-  let settings = {
-    enabled: false,
-    style: "lavender",
-    size: 160,
-    rodWidth: 7,
-    shadowIntensity: 50,
-    color: "#8E5AF7",
-    strokeWidth: 4,
-    fadeDuration: 3000,
-    drawModifier: "shift",
-    hideNativeCursor: true,
-    stickOrigin: "bottom-right",
-    floatingAngle: -15,
-    floatingDynamic: true,
-    idleAnimation: true,
-    animMotionStrength: 100,
-    animBreatheStrength: 100,
-    customImage: null,
-    customHotspot: { x: 0.5, y: 0.2 },
-    customAspect: 1.4
-  };
+  const GEO = globalThis.__TINYHAND_GEO__;
+  if (!GEO) return;
 
-  // Drawing state
+  const IS_TOP_FRAME = (function () {
+    try {
+      return window === window.top;
+    } catch (_) {
+      return false;
+    }
+  })();
+
+  let settings = { ...GEO.DEFAULT_SETTINGS };
+
+  // Drawing state (top frame)
   let drawing = false;
   let currentStroke = null;
-  let strokes = []; // Array of { color, width, points: [{x, y, time}] }
+  let strokes = [];
 
-  // Physics & Animation state
+  // Physics & Animation state (top frame)
   let mouseX = -9999;
   let mouseY = -9999;
   let prevFrameX = -9999;
@@ -47,12 +36,34 @@
   let inertiaAngle = 0;
   let movePhase = 0;
   let isMouseInside = false;
+  let hideExitTimer = null;
   let currentBaseX = -1;
   let currentBaseY = -1;
   let idlePhase = 0;
   let pressAmount = 0;
   let mainLoopId = null;
   let lastLoopTime = 0;
+
+  // Cursor override element (used in top frame AND child frames)
+  let cursorStyleEl = null;
+
+  // Top-frame Shadow DOM references
+  let hostEl = null;
+  let shadowRoot = null;
+  let containerEl = null;
+  let spotlightEl = null;
+  let canvasEl = null;
+  let ctx = null;
+  let armSvgEl = null;
+  let rodEl = null;
+  let ferruleEl = null;
+  let rodGradCylEl = null;
+  let ferruleGradCylEl = null;
+  let pointerEl = null;
+  let innerEl = null;
+  let imgEl = null;
+  let toastEl = null;
+  let toastTimeout = null;
 
   function isExtensionValid() {
     try {
@@ -62,124 +73,204 @@
     }
   }
 
-  // Elements inside Shadow DOM
-  let hostEl = null;
-  let shadowRoot = null;
-  let containerEl = null;
-  let canvasEl = null;
-  let ctx = null;
-  let armSvgEl = null;
-  let rodEl = null;
-  let rodGradCylEl = null;
-  let pointerEl = null;
-  let innerEl = null;
-  let imgEl = null;
-  let toastEl = null;
-  let toastTimeout = null;
-
-  // Exact fingertip and cuff measurements for all 36 authentic hands from nilbuild/tinyhand
-  const STYLE_MEASUREMENTS = {
-    "lavender": {"tipX": 0.4637, "tipY": 0.1754, "cuffX": 0.5125, "cuffY": 1.0, "aspect": 1.4925},
-    "glove": {"tipX": 0.46, "tipY": 0.2103, "cuffX": 0.5138, "cuffY": 1.0, "aspect": 1.476},
-    "coral": {"tipX": 0.4125, "tipY": 0.2241, "cuffX": 0.5225, "cuffY": 1.0, "aspect": 1.3378},
-    "plush": {"tipX": 0.44, "tipY": 0.1879, "cuffX": 0.54, "cuffY": 1.0, "aspect": 1.3423},
-    "robot": {"tipX": 0.3962, "tipY": 0.2599, "cuffX": 0.5, "cuffY": 1.0, "aspect": 1.3158},
-    "pink": {"tipX": 0.4612, "tipY": 0.2429, "cuffX": 0.5188, "cuffY": 1.0, "aspect": 1.4286},
-    "blue": {"tipX": 0.4587, "tipY": 0.2473, "cuffX": 0.5125, "cuffY": 1.0, "aspect": 1.4134},
-    "mint": {"tipX": 0.4612, "tipY": 0.2066, "cuffX": 0.5125, "cuffY": 1.0, "aspect": 1.476},
-    "lemon": {"tipX": 0.4612, "tipY": 0.2045, "cuffX": 0.5162, "cuffY": 1.0, "aspect": 1.487},
-    "black": {"tipX": 0.4537, "tipY": 0.2376, "cuffX": 0.52, "cuffY": 1.0, "aspect": 1.4184},
-    "chrome": {"tipX": 0.4562, "tipY": 0.2096, "cuffX": 0.515, "cuffY": 1.0, "aspect": 1.4706},
-    "holo": {"tipX": 0.4688, "tipY": 0.2193, "cuffX": 0.5225, "cuffY": 1.0, "aspect": 1.487},
-    "fuzzy": {"tipX": 0.4612, "tipY": 0.2059, "cuffX": 0.5238, "cuffY": 1.0, "aspect": 1.4706},
-    "wood": {"tipX": 0.46, "tipY": 0.203, "cuffX": 0.5112, "cuffY": 1.0, "aspect": 1.476},
-    "marble": {"tipX": 0.4575, "tipY": 0.209, "cuffX": 0.5175, "cuffY": 1.0, "aspect": 1.4925},
-    "terrazzo": {"tipX": 0.4612, "tipY": 0.2648, "cuffX": 0.5212, "cuffY": 1.0, "aspect": 1.3937},
-    "glass": {"tipX": 0.4587, "tipY": 0.2711, "cuffX": 0.5238, "cuffY": 1.0, "aspect": 1.4085},
-    "jelly": {"tipX": 0.4662, "tipY": 0.2581, "cuffX": 0.52, "cuffY": 1.0, "aspect": 1.4337},
-    "pastel": {"tipX": 0.4587, "tipY": 0.2066, "cuffX": 0.5138, "cuffY": 1.0, "aspect": 1.476},
-    "pixel": {"tipX": 0.4888, "tipY": 0.2492, "cuffX": 0.5387, "cuffY": 1.0, "aspect": 1.3115},
-    "lowpoly": {"tipX": 0.4562, "tipY": 0.2066, "cuffX": 0.5125, "cuffY": 1.0, "aspect": 1.476},
-    "knit": {"tipX": 0.4713, "tipY": 0.2437, "cuffX": 0.5238, "cuffY": 1.0, "aspect": 1.4337},
-    "skeleton": {"tipX": 0.4587, "tipY": 0.2548, "cuffX": 0.51, "cuffY": 1.0, "aspect": 1.5444},
-    "astro": {"tipX": 0.46, "tipY": 0.1964, "cuffX": 0.5175, "cuffY": 1.0, "aspect": 1.4545},
-    "space": {"tipX": 0.4575, "tipY": 0.2, "cuffX": 0.5275, "cuffY": 1.0, "aspect": 1.4815},
-    "monster": {"tipX": 0.4688, "tipY": 0.23, "cuffX": 0.5238, "cuffY": 1.0, "aspect": 1.3333},
-    "water": {"tipX": 0.4562, "tipY": 0.2381, "cuffX": 0.5112, "cuffY": 1.0, "aspect": 1.4652},
-    "lava": {"tipX": 0.4575, "tipY": 0.2316, "cuffX": 0.5162, "cuffY": 1.0, "aspect": 1.4706},
-    "grass": {"tipX": 0.4625, "tipY": 0.2175, "cuffX": 0.5199, "cuffY": 1.0, "aspect": 1.4035},
-    "cactus": {"tipX": 0.4675, "tipY": 0.2482, "cuffX": 0.5188, "cuffY": 1.0, "aspect": 1.4388},
-    "choco": {"tipX": 0.4688, "tipY": 0.2447, "cuffX": 0.5225, "cuffY": 1.0, "aspect": 1.4184},
-    "cloud": {"tipX": 0.4562, "tipY": 0.2662, "cuffX": 0.5126, "cuffY": 1.0, "aspect": 1.3652},
-    "mech": {"tipX": 0.395, "tipY": 0.213, "cuffX": 0.4975, "cuffY": 1.0, "aspect": 1.444},
-    "neon": {"tipX": 0.4238, "tipY": 0.2138, "cuffX": 0.495, "cuffY": 1.0, "aspect": 1.4493},
-    "leaf": {"tipX": 0.405, "tipY": 0.213, "cuffX": 0.4975, "cuffY": 1.0, "aspect": 1.444},
-    "cookie": {"tipX": 0.4125, "tipY": 0.213, "cuffX": 0.4988, "cuffY": 1.0, "aspect": 1.444},
-    "laser": {"tipX": 0.5, "tipY": 0.5, "cuffX": 0.5, "cuffY": 0.5, "aspect": 1.0}
-  };
-
-  function getStyleMeasurements() {
-    if (settings.style === "custom") {
-      return {
-        tipX: settings.customHotspot?.x ?? 0.5,
-        tipY: settings.customHotspot?.y ?? 0.2,
-        cuffX: 0.5,
-        cuffY: 1.0,
-        aspect: settings.customAspect ?? 1.4
-      };
-    }
-    return STYLE_MEASUREMENTS[settings.style] || { tipX: 0.46, tipY: 0.21, cuffX: 0.51, cuffY: 1.0, aspect: 1.47 };
+  function t(key, substitutions, fallback) {
+    try {
+      const msg = chrome.i18n?.getMessage?.(key, substitutions);
+      if (msg) return msg;
+    } catch (_) {}
+    return fallback;
   }
 
-  // Authentic rod styling & material palettes inspired by nilbuild/tinyhand
-  const STICK_THEMES = {
-    // Warm turned hardwood with brass ferrule
-    "plush": "wood", "wood": "wood", "choco": "wood", "cookie": "wood", "skeleton": "wood",
-    // Pure white lacquered rod with silver ferrule
-    "coral": "white", "neon": "white", "pink": "white", "blue": "white",
-    // Brushed aircraft aluminum with polished chrome ferrule
-    "robot": "steel", "mech": "steel", "chrome": "steel", "lowpoly": "steel", "marble": "steel", "glass": "steel",
-    // Premium obsidian carbon rod with titanium ferrule
-    "default": "carbon"
-  };
+  function updateCursorVisibility() {
+    const shouldHide = IS_TOP_FRAME
+      ? (settings.enabled && settings.hideNativeCursor && isMouseInside)
+      : (settings.enabled && settings.hideNativeCursor);
 
-  const ROD_PALETTES = {
-    "carbon": {
-      highlight: "#5C5C64",
-      midtone: "#262629",
-      shadow: "#121214",
-      deepShadow: "#060608",
-      specular: "rgba(255, 255, 255, 0.28)",
-      ferrule: ["#505058", "#DCDCE4", "#8E8E96", "#3A3A40"]
-    },
-    "wood": {
-      highlight: "#F4DEBF",
-      midtone: "#D4AD7A",
-      shadow: "#9E7440",
-      deepShadow: "#563A1A",
-      specular: "rgba(255, 248, 235, 0.35)",
-      ferrule: ["#A07830", "#FDE89C", "#D4A848", "#6E4E18"] // Warm jewelry brass/gold
-    },
-    "white": {
-      highlight: "#FFFFFF",
-      midtone: "#ECE9E5",
-      shadow: "#C6C0B8",
-      deepShadow: "#8C867E",
-      specular: "rgba(255, 255, 255, 0.55)",
-      ferrule: ["#A0A0A8", "#FFFFFF", "#B8B8C0", "#686870"] // Pure silver
-    },
-    "steel": {
-      highlight: "#FFFFFF",
-      midtone: "#C6CAD2",
-      shadow: "#828892",
-      deepShadow: "#4E545E",
-      specular: "rgba(255, 255, 255, 0.45)",
-      ferrule: ["#70757E", "#F0F2F6", "#A2A7B0", "#4A4E56"] // Aircraft chrome
+    if (shouldHide) {
+      if (!cursorStyleEl || !cursorStyleEl.isConnected) {
+        const stale = document.getElementById("tinyhand-cursor-override");
+        if (stale) stale.remove();
+        cursorStyleEl = document.createElement("style");
+        cursorStyleEl.id = "tinyhand-cursor-override";
+        cursorStyleEl.textContent = `
+          *, *:hover, *:active, *::before, *::after {
+            cursor: none !important;
+          }
+        `;
+        (document.head || document.documentElement).appendChild(cursorStyleEl);
+      }
+    } else if (cursorStyleEl) {
+      cursorStyleEl.remove();
+      cursorStyleEl = null;
     }
-  };
+  }
 
-  // 1. Initialize DOM & Shadow DOM
+  function handleExtensionInvalidated() {
+    settings.enabled = false;
+    settings.spotlight = false;
+    isMouseInside = false;
+    if (hideExitTimer) {
+      clearTimeout(hideExitTimer);
+      hideExitTimer = null;
+    }
+    if (mainLoopId) {
+      cancelAnimationFrame(mainLoopId);
+      mainLoopId = null;
+    }
+    if (spotlightEl) spotlightEl.classList.remove("active");
+    if (pointerEl) pointerEl.style.display = "none";
+    if (rodEl) rodEl.style.display = "none";
+    if (ferruleEl) ferruleEl.style.display = "none";
+    if (hostEl) {
+      hostEl.remove();
+      hostEl = null;
+    }
+    updateCursorVisibility();
+  }
+
+  function findChildFrameElement(sourceWindow) {
+    if (!sourceWindow) return null;
+    const frames = document.querySelectorAll("iframe, frame");
+    for (let i = 0; i < frames.length; i++) {
+      try {
+        if (frames[i].contentWindow === sourceWindow) {
+          return frames[i];
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  function translateFramePoint(frameEl, x, y) {
+    const rect = frameEl.getBoundingClientRect();
+    const cs = getComputedStyle(frameEl);
+    const padLeft = parseFloat(cs.borderLeftWidth || "0") + parseFloat(cs.paddingLeft || "0");
+    const padTop = parseFloat(cs.borderTopWidth || "0") + parseFloat(cs.paddingTop || "0");
+    return {
+      x: rect.left + padLeft + x,
+      y: rect.top + padTop + y
+    };
+  }
+
+  function shouldDrawWithState(shiftKey, altKey) {
+    if (!settings.enabled) return false;
+    if (settings.drawModifier === "shift") return Boolean(shiftKey);
+    if (settings.drawModifier === "alt") return Boolean(altKey);
+    if (settings.drawModifier === "always") return true;
+    return Boolean(shiftKey);
+  }
+
+  // =========================================================================
+  // CHILD FRAME LIGHTWEIGHT BRIDGE (!IS_TOP_FRAME)
+  // =========================================================================
+  if (!IS_TOP_FRAME) {
+    function postToParent(payload) {
+      if (!isExtensionValid()) {
+        handleExtensionInvalidated();
+        return;
+      }
+      if (!settings.enabled) return;
+      try {
+        window.parent.postMessage({ __tinyhandBridge: "v1", ...payload }, "*");
+      } catch (_) {}
+    }
+
+    // Relay messages from deeper nested frames upward with cumulative rect offset
+    window.addEventListener("message", (e) => {
+      const data = e.data;
+      if (!data || data.__tinyhandBridge !== "v1") return;
+      if (!Number.isFinite(data.clientX) || !Number.isFinite(data.clientY)) return;
+      const childEl = findChildFrameElement(e.source);
+      if (!childEl) return;
+      const mapped = translateFramePoint(childEl, data.clientX, data.clientY);
+      postToParent({
+        ...data,
+        clientX: mapped.x,
+        clientY: mapped.y
+      });
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "touch") {
+        postToParent({ kind: "move", clientX: e.clientX, clientY: e.clientY });
+      }
+    }, { capture: true, passive: true });
+
+    document.addEventListener("mouseenter", (e) => {
+      postToParent({ kind: "move", clientX: e.clientX, clientY: e.clientY });
+    });
+
+    document.addEventListener("mouseleave", () => {
+      postToParent({ kind: "leave", clientX: 0, clientY: 0 });
+    });
+
+    window.addEventListener("mousedown", (e) => {
+      if (e.button === 0 && shouldDrawWithState(e.shiftKey, e.altKey)) {
+        e.preventDefault();
+      }
+      postToParent({
+        kind: "down",
+        clientX: e.clientX,
+        clientY: e.clientY,
+        button: e.button,
+        shiftKey: e.shiftKey,
+        altKey: e.altKey
+      });
+    }, true);
+
+    window.addEventListener("mouseup", (e) => {
+      postToParent({
+        kind: "up",
+        clientX: e.clientX,
+        clientY: e.clientY,
+        button: e.button
+      });
+    }, true);
+
+    window.addEventListener("dblclick", (e) => {
+      postToParent({
+        kind: "dblclick",
+        clientX: e.clientX,
+        clientY: e.clientY
+      });
+    }, { capture: true, passive: true });
+
+    window.addEventListener("keydown", (e) => {
+      if (!settings.enabled) return;
+      if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.key.toLowerCase() === "c") {
+        postToParent({ kind: "clear", clientX: 0, clientY: 0 });
+      } else if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.key.toLowerCase() === "z") {
+        postToParent({ kind: "undo", clientX: 0, clientY: 0 });
+      }
+    });
+
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== "local") return;
+      for (const [key, change] of Object.entries(changes)) {
+        settings[key] = change.newValue;
+      }
+      updateCursorVisibility();
+    });
+
+    (async function () {
+      try {
+        const stored = await chrome.storage.local.get(null);
+        settings = { ...settings, ...stored };
+      } catch (_) {}
+      updateCursorVisibility();
+    })();
+    return;
+  }
+
+  // =========================================================================
+  // TOP FRAME FULL OVERLAY (IS_TOP_FRAME === true)
+  // =========================================================================
+
   function initDOM() {
+    // Clean up any orphaned host/style elements left after an extension reload
+    document.getElementById("tinyhand-host")?.remove();
+    document.getElementById("tinyhand-cursor-override")?.remove();
+
     hostEl = document.createElement("div");
     hostEl.id = "tinyhand-host";
     hostEl.style.position = "fixed";
@@ -190,9 +281,8 @@
     hostEl.style.pointerEvents = "none";
     hostEl.style.zIndex = "2147483647";
 
-    shadowRoot = hostEl.attachShadow({ mode: "open" });
+    shadowRoot = hostEl.attachShadow({ mode: "closed" });
 
-    // Inline styles directly into Shadow Root for 100% reliable, zero-latency rendering
     const styleEl = document.createElement("style");
     styleEl.textContent = `
       :host { all: initial; }
@@ -201,13 +291,31 @@
         pointer-events: none !important; z-index: 2147483647 !important;
         overflow: hidden; user-select: none; -webkit-user-select: none;
       }
-      #tinyhand-arm-svg {
-        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-        pointer-events: none !important; overflow: visible;
+      #tinyhand-spotlight {
+        position: fixed; inset: 0;
+        pointer-events: none !important;
+        opacity: 0;
+        transition: opacity 0.2s ease-out;
+        background: radial-gradient(
+          circle at var(--spot-x, 50%) var(--spot-y, 50%),
+          rgba(0, 0, 0, 0) calc(var(--spot-r, 150px) * 0.65),
+          rgba(0, 0, 0, calc(var(--spot-dim, 0.5) * 0.48)) calc(var(--spot-r, 150px) * 0.88),
+          rgba(0, 0, 0, var(--spot-dim, 0.5)) var(--spot-r, 150px)
+        );
+      }
+      #tinyhand-spotlight.active {
+        opacity: 1;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #tinyhand-spotlight { transition: none; }
       }
       #tinyhand-canvas {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         pointer-events: none !important;
+      }
+      #tinyhand-arm-svg {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        pointer-events: none !important; overflow: visible;
       }
       #tinyhand-pointer {
         position: absolute; pointer-events: none !important;
@@ -226,9 +334,24 @@
         transform: translate(-50%, -50%); box-sizing: border-box;
         animation: tinyhand-ripple-anim 0.45s ease-out forwards;
       }
+      .tinyhand-ripple.tinyhand-ripple-right {
+        border-style: dashed !important;
+        animation: tinyhand-ripple-right-anim 0.52s ease-out forwards;
+      }
+      .tinyhand-ripple.tinyhand-ripple-double {
+        animation: tinyhand-ripple-double-anim 0.55s ease-out forwards;
+      }
       @keyframes tinyhand-ripple-anim {
-        0% { width: 8px; height: 8px; opacity: 0.9; border: 3px solid rgba(255, 59, 48, 0.9); box-shadow: 0 0 6px rgba(255, 59, 48, 0.8); }
-        100% { width: 65px; height: 65px; opacity: 0; border: 1.5px solid rgba(255, 59, 48, 0.2); box-shadow: 0 0 16px rgba(255, 59, 48, 0); }
+        0% { width: 8px; height: 8px; opacity: 0.92; border-width: 3px; border-style: solid; }
+        100% { width: 66px; height: 66px; opacity: 0; border-width: 1.5px; border-style: solid; }
+      }
+      @keyframes tinyhand-ripple-right-anim {
+        0% { width: 10px; height: 10px; opacity: 0.95; border-width: 3px; }
+        100% { width: 72px; height: 72px; opacity: 0; border-width: 2px; }
+      }
+      @keyframes tinyhand-ripple-double-anim {
+        0% { width: 10px; height: 10px; opacity: 0.95; border-width: 4px; border-style: double; }
+        100% { width: 86px; height: 86px; opacity: 0; border-width: 4px; border-style: double; }
       }
       #tinyhand-toast {
         position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-20px);
@@ -245,11 +368,21 @@
     `;
     shadowRoot.appendChild(styleEl);
 
-    // Container
     containerEl = document.createElement("div");
     containerEl.id = "tinyhand-container";
 
-    // SVG for stick/rod coming from screen corner or bottom
+    // Spotlight layer (lowest overlay layer so drawings and pointer stay luminous inside/outside)
+    spotlightEl = document.createElement("div");
+    spotlightEl.id = "tinyhand-spotlight";
+    containerEl.appendChild(spotlightEl);
+
+    // Canvas for drawing
+    canvasEl = document.createElement("canvas");
+    canvasEl.id = "tinyhand-canvas";
+    ctx = canvasEl.getContext("2d");
+    containerEl.appendChild(canvasEl);
+
+    // SVG for stick/rod and machined metallic ferrule collar
     const svgNS = "http://www.w3.org/2000/svg";
     armSvgEl = document.createElementNS(svgNS, "svg");
     armSvgEl.id = "tinyhand-arm-svg";
@@ -262,19 +395,22 @@
           <stop id="rod-stop-3" offset="72%" stop-color="#262629"/>
           <stop id="rod-stop-4" offset="100%" stop-color="#060608"/>
         </linearGradient>
+        <linearGradient id="ferrule-grad-cylinder" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
+          <stop id="ferrule-stop-0" offset="0%" stop-color="#505058"/>
+          <stop id="ferrule-stop-1" offset="32%" stop-color="#DCDCE4"/>
+          <stop id="ferrule-stop-2" offset="68%" stop-color="#8E8E96"/>
+          <stop id="ferrule-stop-3" offset="100%" stop-color="#3A3A40"/>
+        </linearGradient>
       </defs>
       <line id="tinyhand-rod" x1="0" y1="0" x2="0" y2="0" stroke="url(#rod-grad-cylinder)" stroke-width="7" stroke-linecap="round" />
+      <line id="tinyhand-ferrule" x1="0" y1="0" x2="0" y2="0" stroke="url(#ferrule-grad-cylinder)" stroke-width="10" stroke-linecap="butt" />
     `;
     containerEl.appendChild(armSvgEl);
 
     rodEl = armSvgEl.querySelector("#tinyhand-rod");
+    ferruleEl = armSvgEl.querySelector("#tinyhand-ferrule");
     rodGradCylEl = armSvgEl.querySelector("#rod-grad-cylinder");
-
-    // Canvas for drawing
-    canvasEl = document.createElement("canvas");
-    canvasEl.id = "tinyhand-canvas";
-    ctx = canvasEl.getContext("2d");
-    containerEl.appendChild(canvasEl);
+    ferruleGradCylEl = armSvgEl.querySelector("#ferrule-grad-cylinder");
 
     // Pointer wrapper
     pointerEl = document.createElement("div");
@@ -291,7 +427,6 @@
 
     containerEl.appendChild(pointerEl);
 
-    // Toast element for feedback
     toastEl = document.createElement("div");
     toastEl.id = "tinyhand-toast";
     containerEl.appendChild(toastEl);
@@ -303,7 +438,6 @@
     updatePointerVisuals();
   }
 
-  // 2. High DPI Canvas Resize
   function resizeCanvas() {
     if (!canvasEl || !ctx) return;
     const dpr = window.devicePixelRatio || 1;
@@ -315,41 +449,16 @@
     canvasEl.style.width = w + "px";
     canvasEl.style.height = h + "px";
 
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
   }
 
-  // 3. Update Cursor Override (Hide native cursor behind hand)
-  let cursorStyleEl = null;
-
-  function updateCursorVisibility() {
-    if (settings.enabled && settings.hideNativeCursor && isMouseInside) {
-      if (!cursorStyleEl) {
-        cursorStyleEl = document.createElement("style");
-        cursorStyleEl.id = "tinyhand-cursor-override";
-        cursorStyleEl.textContent = `
-          *, *:hover, *:active, *::before, *::after {
-            cursor: none !important;
-          }
-        `;
-        (document.head || document.documentElement).appendChild(cursorStyleEl);
-      }
-    } else {
-      if (cursorStyleEl) {
-        cursorStyleEl.remove();
-        cursorStyleEl = null;
-      }
-    }
-  }
-
-  // 4. Update Shadow & 3D Depth
   function updateShadowStyles() {
     if (!innerEl || !armSvgEl) return;
 
     const intensity = settings.shadowIntensity !== undefined ? Number(settings.shadowIntensity) : 50;
     const factor = intensity / 100;
 
-    // A) Hand drop-shadow
     if (settings.style === "laser") {
       const laserGlow = Math.round(14 * (0.4 + 0.6 * factor));
       const laserOp = (0.5 + 0.45 * factor).toFixed(2);
@@ -364,7 +473,6 @@
       innerEl.style.filter = `drop-shadow(${dx}px ${dy}px ${blur}px rgba(0, 0, 0, ${op}))`;
     }
 
-    // B) Rod drop-shadow via GPU-accelerated CSS filter (avoids SVG objectBoundingBox clipping on vertical lines)
     if (intensity <= 0) {
       armSvgEl.style.filter = "none";
     } else {
@@ -375,11 +483,9 @@
     }
   }
 
-  // 5. Update Rod Material & Theme (matches authentic nilbuild/tinyhand aesthetics)
   function updateRodTheme() {
     if (!armSvgEl) return;
-    const themeKey = STICK_THEMES[settings.style] || STICK_THEMES["default"];
-    const p = ROD_PALETTES[themeKey] || ROD_PALETTES["carbon"];
+    const { palette: p } = GEO.resolveRodPalette(settings);
 
     const s0 = armSvgEl.querySelector("#rod-stop-0");
     const s1 = armSvgEl.querySelector("#rod-stop-1");
@@ -391,24 +497,38 @@
     if (s2) s2.setAttribute("stop-color", p.highlight);
     if (s3) s3.setAttribute("stop-color", p.midtone);
     if (s4) s4.setAttribute("stop-color", p.deepShadow);
+
+    const fColors = p.ferrule || ["#505058", "#DCDCE4", "#8E8E96", "#3A3A40"];
+    const f0 = armSvgEl.querySelector("#ferrule-stop-0");
+    const f1 = armSvgEl.querySelector("#ferrule-stop-1");
+    const f2 = armSvgEl.querySelector("#ferrule-stop-2");
+    const f3 = armSvgEl.querySelector("#ferrule-stop-3");
+    if (f0) f0.setAttribute("stop-color", fColors[0]);
+    if (f1) f1.setAttribute("stop-color", fColors[1]);
+    if (f2) f2.setAttribute("stop-color", fColors[2]);
+    if (f3) f3.setAttribute("stop-color", fColors[3]);
   }
 
-  function handleExtensionInvalidated() {
-    settings.enabled = false;
-    isMouseInside = false;
-    if (pointerEl) pointerEl.style.display = "none";
-    if (rodEl) rodEl.style.display = "none";
-    updateCursorVisibility();
+  function updateSpotlightVisuals(renderActive) {
+    if (!spotlightEl) return;
+    const active = Boolean(renderActive && settings.spotlight);
+    spotlightEl.classList.toggle("active", active);
+    if (active) {
+      const r = Number(settings.spotlightRadius ?? 150);
+      const dim = Math.max(0.1, Math.min(0.9, Number(settings.spotlightOpacity ?? 50) / 100));
+      spotlightEl.style.setProperty("--spot-r", `${r}px`);
+      spotlightEl.style.setProperty("--spot-dim", dim.toFixed(2));
+      spotlightEl.style.setProperty("--spot-x", `${mouseX}px`);
+      spotlightEl.style.setProperty("--spot-y", `${mouseY}px`);
+    }
   }
 
-  // 6. Update Visual Appearance based on Settings
   function updatePointerVisuals() {
     if (!isExtensionValid()) {
       handleExtensionInvalidated();
       return;
     }
 
-    // Check if cursor is already resting inside the viewport (e.g. activated via keyboard shortcut Alt+H)
     if (!isMouseInside && document.documentElement && document.documentElement.matches(":hover")) {
       isMouseInside = true;
     }
@@ -420,18 +540,19 @@
     if (!settings.enabled) {
       pointerEl.style.display = "none";
       if (rodEl) rodEl.style.display = "none";
+      if (ferruleEl) ferruleEl.style.display = "none";
+      updateSpotlightVisuals(false);
       return;
     }
 
-    // Default center if cursor coordinates not yet available
     if (mouseX < 0 || mouseY < 0) {
       mouseX = Math.round(window.innerWidth / 2);
       mouseY = Math.round(window.innerHeight / 2);
     }
 
     pointerEl.style.display = isMouseInside ? "block" : "none";
+    updateSpotlightVisuals(isMouseInside);
 
-    // Set Image Source
     try {
       if (settings.style === "custom" && settings.customImage) {
         imgEl.src = settings.customImage;
@@ -445,18 +566,17 @@
       return;
     }
 
-    // Set Size
+    // Horizontal flip only mirrors custom image pixels; rotation/pivot stay clean in unmirrored parent space
+    imgEl.style.transform = (settings.style === "custom" && settings.customFlipX) ? "scaleX(-1)" : "";
+
     pointerEl.style.width = settings.size + "px";
     pointerEl.className = `style-${settings.style}`;
 
-    // Apply rod theme & 3D shadow depth
     updateRodTheme();
     updateShadowStyles();
-
     startMainLoop();
   }
 
-  // 5. Main Animation & Physics Loop (Stick geometry, idle breathing, click tap)
   function startMainLoop() {
     if (!mainLoopId) {
       lastLoopTime = 0;
@@ -464,10 +584,19 @@
     }
   }
 
+  function setCylinderGradient(gradEl, ax, ay, bx, by, nx, ny, halfWidth) {
+    if (!gradEl) return;
+    const midX = (ax + bx) / 2;
+    const midY = (ay + by) / 2;
+    gradEl.setAttribute("x1", midX - nx * halfWidth);
+    gradEl.setAttribute("y1", midY - ny * halfWidth);
+    gradEl.setAttribute("x2", midX + nx * halfWidth);
+    gradEl.setAttribute("y2", midY + ny * halfWidth);
+  }
+
   function mainLoop(timestamp) {
     if (!isExtensionValid()) {
       handleExtensionInvalidated();
-      mainLoopId = null;
       return;
     }
 
@@ -477,10 +606,10 @@
     if (!shouldRenderPointer && !hasPendingStrokes) {
       mainLoopId = null;
       lastLoopTime = 0;
+      updateSpotlightVisuals(false);
       return;
     }
 
-    // Frame-rate independent delta time normalized to 60Hz (1.0 = 16.67ms; ~0.5 on 120Hz ProMotion)
     if (!lastLoopTime) lastLoopTime = timestamp;
     const rawDt = timestamp - lastLoopTime;
     lastLoopTime = timestamp;
@@ -491,7 +620,6 @@
       const w = window.innerWidth;
       const h = window.innerHeight;
 
-      // Track normalized velocity (px per 60Hz frame) for consistent motion across 60Hz/120Hz displays
       if (prevFrameX < 0 || prevFrameY < 0) {
         prevFrameX = mouseX;
         prevFrameY = mouseY;
@@ -509,43 +637,24 @@
       const motionFactor = settings.idleAnimation !== false ? ((settings.animMotionStrength ?? 100) / 100) : 0;
       const breatheFactor = settings.idleAnimation !== false ? ((settings.animBreatheStrength ?? 100) / 100) : 0;
 
-      // A) Calculate Target Base Point for the Stick
-      const normX = Math.min(1, Math.max(0, mouseX / (w || 1)));
-      // Deep vertical pivot clearance prevents abrupt angles or 180° flips near the bottom of the screen
-      const baseClearance = Math.max(140, Math.round(settings.size * 0.9 + 55));
-      let targetBaseX = w * 0.36 + normX * (w * 0.58);
-      const targetBaseY = h + baseClearance;
-
-      if (settings.stickOrigin === "bottom-right") {
-        // Unten rechts: wandert entlang des unteren Bildschirmrands mit (rechtsseitig orientiert)
-        targetBaseX = w * 0.36 + normX * (w * 0.58);
-      } else if (settings.stickOrigin === "bottom-left") {
-        // Unten links: wandert entlang des unteren Bildschirmrands mit (linksseitig orientiert)
-        targetBaseX = w * 0.06 + normX * (w * 0.58);
-      } else if (settings.stickOrigin === "bottom-right-fixed") {
-        // Feste Ecke unten rechts
-        targetBaseX = w * 0.94;
-      } else if (settings.stickOrigin === "bottom-left-fixed") {
-        // Feste Ecke unten links
-        targetBaseX = w * 0.06;
-      } else if (settings.stickOrigin === "dynamic") {
-        // Dynamisch von unten: Basis wandert mittig mit dem Cursor und neigt sich sanft zu den Rändern
-        const edgeTilt = (normX - 0.5) * Math.min(180, w * 0.14);
-        targetBaseX = mouseX - edgeTilt;
-      }
+      const { targetBaseX, targetBaseY } = GEO.computeStickTargetBase(
+        settings.stickOrigin,
+        mouseX,
+        w,
+        h,
+        settings.size
+      );
 
       if (currentBaseX < 0 || currentBaseY < 0) {
         currentBaseX = targetBaseX;
         currentBaseY = targetBaseY;
       } else {
-        // Responsive base tracking so the rod never falls far behind fast cursor sweeps
         const rate60 = motionFactor === 0 ? 0.9 : (settings.stickOrigin === "dynamic" ? 0.72 : 0.55);
         const followK = smoothK(rate60);
         currentBaseX += (targetBaseX - currentBaseX) * followK;
         currentBaseY += (targetBaseY - currentBaseY) * followK;
       }
 
-      // B) Idle Breathing & Movement Animation ("Dezente Animation im Stillstand & beim Bewegen")
       let swayAngle = 0;
       let breatheLift = 0;
       let idleBaseSway = 0;
@@ -554,7 +663,7 @@
       let motionLag = 0;
       let inertiaBaseLag = 0;
 
-      const idleWeight = Math.max(0, 1 - currentSpeed * 0.25); // 1.0 when still, 0 when moving
+      const idleWeight = Math.max(0, 1 - currentSpeed * 0.25);
 
       if (breatheFactor > 0) {
         idlePhase += 0.035 * dtScale;
@@ -573,28 +682,33 @@
         moveTilt = Math.sin(movePhase) * Math.min(currentSpeed * 0.05, 1.2) * motionFactor;
         moveLift = Math.cos(movePhase * 0.8) * Math.min(currentSpeed * 0.04, 1.5) * motionFactor;
         motionLag = Math.min(3.5, currentSpeed * 0.06) * motionFactor;
-
-        // Bounded base lag in stick mode keeps hand + rod locked as one rigid unit without wild spinning
         inertiaBaseLag = Math.max(-36, Math.min(36, -smoothedVx * 0.18)) * motionFactor;
       } else {
         inertiaAngle = 0;
       }
 
-      // C) Click Tap Spring Damping
       pressAmount += (0 - pressAmount) * smoothK(0.18);
       if (pressAmount < 0.001) pressAmount = 0;
       const pressDip = pressAmount * 7;
       const pressScale = 1 - pressAmount * 0.05;
 
-      // D) Position Hand and Stick
+      // Update Spotlight position seamlessly without transition delay
+      if (settings.spotlight && spotlightEl) {
+        spotlightEl.classList.add("active");
+        spotlightEl.style.setProperty("--spot-x", `${mouseX}px`);
+        spotlightEl.style.setProperty("--spot-y", `${mouseY}px`);
+      } else if (spotlightEl) {
+        spotlightEl.classList.remove("active");
+      }
+
       if (pointerEl && imgEl && innerEl) {
         const tipYTarget = mouseY + breatheLift + moveLift;
         const motionAngle = inertiaAngle + moveTilt;
         const totalExtraAngle = swayAngle + motionAngle;
 
         if (settings.style === "laser") {
-          // Laser dot pointer
           if (rodEl) rodEl.style.display = "none";
+          if (ferruleEl) ferruleEl.style.display = "none";
           pointerEl.style.left = mouseX + "px";
           pointerEl.style.top = mouseY + "px";
           pointerEl.style.transformOrigin = "50% 50%";
@@ -602,11 +716,10 @@
           const laserScale = (1 + pressAmount * 0.35) * (1 + Math.min(0.2, currentSpeed * 0.008));
           innerEl.style.transform = `scale(${laserScale})`;
         } else if (settings.stickOrigin === "floating") {
-          // Free-floating pointer without stick to screen edge
           if (rodEl) rodEl.style.display = "none";
-          const m = getStyleMeasurements();
+          if (ferruleEl) ferruleEl.style.display = "none";
+          const m = GEO.getStyleMeasurements(settings);
 
-          // User customizable tilt angle + dynamic motion/screen tilt
           const baseAngle = Number(settings.floatingAngle ?? -15);
           let dynamicTilt = 0;
           if (settings.floatingDynamic !== false) {
@@ -624,120 +737,109 @@
           innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
           innerEl.style.transform = `translate(0, ${pressDip + motionLag}px) scale(${pressScale}) rotate(${-pressAmount * 8 + motionAngle * 0.3}deg)`;
         } else {
-          // Stick mode: single continuous rigid stick extending from bottom/corner directly into hand cuff
           if (rodEl) rodEl.style.display = "block";
+          if (ferruleEl) ferruleEl.style.display = "block";
 
-          const m = getStyleMeasurements();
-          const handH = settings.size / (m.aspect || 1.4);
-
-          // Scale cuff-to-tip vector with click pressScale so cuff remains locked to rod during tap
-          const localDx = (m.tipX - m.cuffX) * settings.size * pressScale;
-          const localDy = (m.tipY - m.cuffY) * handH * pressScale;
-
+          const m = GEO.getStyleMeasurements(settings);
           const renderBaseX = currentBaseX + idleBaseSway + inertiaBaseLag;
           const renderBaseY = currentBaseY;
 
-          // Iterative collinear 90° alignment: keeps cuff centered perpendicularly on the rod while fingertip stays locked at cursor
-          let rodAngle = Math.atan2(Math.min(-24, tipYTarget - renderBaseY), mouseX - renderBaseX);
-          let handRad = rodAngle + Math.PI / 2;
-          let cuffScreenX = mouseX;
-          let cuffScreenY = tipYTarget;
-
-          for (let iter = 0; iter < 4; iter++) {
-            const offX = localDx * Math.cos(handRad) - localDy * Math.sin(handRad);
-            const offY = localDx * Math.sin(handRad) + localDy * Math.cos(handRad);
-            cuffScreenX = mouseX - offX;
-            cuffScreenY = tipYTarget - offY;
-            const safeDy = Math.min(-24, cuffScreenY - renderBaseY);
-            rodAngle = Math.atan2(safeDy, cuffScreenX - renderBaseX);
-            handRad = rodAngle + Math.PI / 2;
-          }
-
-          const totalRotDeg = (handRad * 180) / Math.PI;
+          const geom = GEO.solveCollinearRodAlignment({
+            mouseX,
+            tipYTarget,
+            renderBaseX,
+            renderBaseY,
+            size: settings.size,
+            rodWidth: settings.rodWidth,
+            pressScale,
+            measurements: m
+          });
 
           pointerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
           pointerEl.style.left = mouseX + "px";
           pointerEl.style.top = tipYTarget + "px";
-          pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${totalRotDeg}deg)`;
+          pointerEl.style.transform = `translate(-${m.tipX * 100}%, -${m.tipY * 100}%) rotate(${geom.totalRotDeg}deg)`;
           innerEl.style.transformOrigin = `${m.tipX * 100}% ${m.tipY * 100}%`;
           innerEl.style.transform = `scale(${pressScale})`;
 
-          // Scale rod insertion cleanly behind cuff sleeve for all hand sizes (60-320px)
-          const insertDepth = Math.max(4, Math.min(12, settings.size * 0.05));
-          const rodEndX = cuffScreenX + Math.cos(rodAngle) * insertDepth;
-          const rodEndY = cuffScreenY + Math.sin(rodAngle) * insertDepth;
-
-          const rodW = settings.rodWidth !== undefined ? Number(settings.rodWidth) : Math.max(5, Math.round(settings.size * 0.045));
-
-          // 1. Position Main 3D Cylindrical Rod (uniform constant stroke-width)
           rodEl.setAttribute("x1", renderBaseX);
           rodEl.setAttribute("y1", renderBaseY);
-          rodEl.setAttribute("x2", rodEndX);
-          rodEl.setAttribute("y2", rodEndY);
-          rodEl.setAttribute("stroke-width", rodW);
+          rodEl.setAttribute("x2", geom.rodEndX);
+          rodEl.setAttribute("y2", geom.rodEndY);
+          rodEl.setAttribute("stroke-width", geom.rodW);
 
-          // 2. Normal vector strictly perpendicular to the rod axis
-          const nx = -Math.sin(rodAngle);
-          const ny = Math.cos(rodAngle);
-
-          // 3. Orient the 3D Cylindrical Gradient across the rod's diameter
-          if (rodGradCylEl) {
-            const midX = (renderBaseX + rodEndX) / 2;
-            const midY = (renderBaseY + rodEndY) / 2;
-            const halfW = rodW / 2;
-            rodGradCylEl.setAttribute("x1", midX - nx * halfW);
-            rodGradCylEl.setAttribute("y1", midY - ny * halfW);
-            rodGradCylEl.setAttribute("x2", midX + nx * halfW);
-            rodGradCylEl.setAttribute("y2", midY + ny * halfW);
+          if (ferruleEl) {
+            ferruleEl.setAttribute("x1", geom.ferruleStartX);
+            ferruleEl.setAttribute("y1", geom.ferruleStartY);
+            ferruleEl.setAttribute("x2", geom.ferruleEndX);
+            ferruleEl.setAttribute("y2", geom.ferruleEndY);
+            ferruleEl.setAttribute("stroke-width", geom.ferruleW);
           }
+
+          setCylinderGradient(rodGradCylEl, renderBaseX, renderBaseY, geom.rodEndX, geom.rodEndY, geom.nx, geom.ny, geom.rodW / 2);
+          setCylinderGradient(ferruleGradCylEl, geom.ferruleStartX, geom.ferruleStartY, geom.ferruleEndX, geom.ferruleEndY, geom.nx, geom.ny, geom.ferruleW / 2);
         }
       }
+    } else {
+      updateSpotlightVisuals(false);
     }
 
-    // E) Render fading ink drawings on canvas
     renderCanvasStrokes();
-
     mainLoopId = requestAnimationFrame(mainLoop);
   }
 
-  // 6. Click Feedback (Tap Dip Animation + Expanding Ripple)
-  function triggerClickFeedback(x, y) {
-    if (!settings.enabled) return;
+  function triggerClickFeedback(x, y, variant = "left") {
+    if (!settings.enabled || !containerEl) return;
 
-    // A) Tap impulse on hand
-    pressAmount = 1.0;
+    pressAmount = variant === "right" ? 0.65 : 1.0;
 
-    // B) Glowing Ripple at fingertip
-    const ripple = document.createElement("div");
-    ripple.className = "tinyhand-ripple";
-    ripple.style.left = x + "px";
-    ripple.style.top = y + "px";
+    if (settings.clickRipple !== false) {
+      const ripple = document.createElement("div");
+      let cls = "tinyhand-ripple";
+      let ringColor = settings.color || "#8E5AF7";
 
-    // Ripple color matching drawing ink or vibrant purple/red
-    const rippleColor = settings.color || "#8E5AF7";
-    ripple.style.borderColor = rippleColor;
-    ripple.style.boxShadow = `0 0 10px ${rippleColor}`;
+      if (variant === "right") {
+        cls += " tinyhand-ripple-right";
+        ringColor = "#FF9F0A";
+      } else if (variant === "double") {
+        cls += " tinyhand-ripple-double";
+      }
 
-    containerEl.appendChild(ripple);
-    setTimeout(() => {
-      ripple.remove();
-    }, 500);
+      ripple.className = cls;
+      ripple.style.left = x + "px";
+      ripple.style.top = y + "px";
+      ripple.style.borderColor = ringColor;
+      ripple.style.boxShadow = `0 0 10px ${ringColor}`;
+
+      containerEl.appendChild(ripple);
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+    }
 
     startMainLoop();
   }
 
-  // 7. Toast Feedback
   function showToast(msg) {
-    if (!toastEl) return;
+    if (!toastEl || !msg) return;
     toastEl.textContent = msg;
     toastEl.classList.add("show");
     if (toastTimeout) clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
       toastEl.classList.remove("show");
-    }, 1600);
+    }, 1700);
   }
 
-  // 8. Ephemeral Canvas Ink Renderer
+  function drawRoundedRect(ctx2d, x, y, w, h, r) {
+    if (typeof ctx2d.roundRect === "function") {
+      ctx2d.beginPath();
+      ctx2d.roundRect(x, y, w, h, r);
+      return;
+    }
+    ctx2d.beginPath();
+    ctx2d.rect(x, y, w, h);
+  }
+
   function renderCanvasStrokes() {
     if (!ctx || !canvasEl) return;
 
@@ -747,20 +849,17 @@
 
     const now = performance.now();
 
-    // Filter and render strokes
     strokes = strokes.filter((stroke) => {
-      if (!stroke.points || stroke.points.length === 0) return false;
+      if (drawing && stroke === currentStroke) {
+        stroke.lastTime = now;
+      }
 
-      const lastPoint = stroke.points[stroke.points.length - 1];
-      const age = now - lastPoint.time;
-
+      const age = now - (stroke.lastTime || 0);
       let alpha = 1.0;
-      if (settings.fadeDuration > 0) {
+      if (settings.fadeDuration > 0 && !(drawing && stroke === currentStroke)) {
         if (age >= settings.fadeDuration) {
-          return false; // Stroke has completely faded away
+          return false;
         }
-
-        // Start fade after 65% of fade duration has elapsed
         const fadeStart = settings.fadeDuration * 0.65;
         if (age > fadeStart) {
           const fadeProgress = (age - fadeStart) / (settings.fadeDuration - fadeStart);
@@ -768,55 +867,172 @@
         }
       }
 
-      // Draw stroke with smooth Bézier curves
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.strokeStyle = stroke.color;
+      ctx.fillStyle = stroke.color;
       ctx.lineWidth = stroke.width;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      ctx.beginPath();
-      const pts = stroke.points;
-      if (pts.length === 1) {
-        ctx.arc(pts[0].x, pts[0].y, stroke.width / 2, 0, Math.PI * 2);
-        ctx.fillStyle = stroke.color;
-        ctx.fill();
-      } else {
-        ctx.moveTo(pts[0].x, pts[0].y);
-        for (let i = 1; i < pts.length - 1; i++) {
-          const midX = (pts[i].x + pts[i + 1].x) / 2;
-          const midY = (pts[i].y + pts[i + 1].y) / 2;
-          ctx.quadraticCurveTo(pts[i].x, pts[i].y, midX, midY);
-        }
-        ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
-        ctx.stroke();
-      }
-      ctx.restore();
+      if (stroke.tool === "arrow") {
+        const arrow = GEO.computeArrowGeometry(stroke.startX, stroke.startY, stroke.endX, stroke.endY, stroke.width);
+        if (arrow.isDot) {
+          ctx.beginPath();
+          ctx.arc(arrow.tipX, arrow.tipY, stroke.width / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(stroke.startX, stroke.startY);
+          ctx.lineTo(arrow.shaftEndX, arrow.shaftEndY);
+          ctx.stroke();
 
+          ctx.beginPath();
+          ctx.moveTo(arrow.tipX, arrow.tipY);
+          ctx.lineTo(arrow.leftX, arrow.leftY);
+          ctx.lineTo(arrow.rightX, arrow.rightY);
+          ctx.closePath();
+          ctx.fill();
+        }
+      } else if (stroke.tool === "rect") {
+        const rect = GEO.computeNormalizedRect(stroke.startX, stroke.startY, stroke.endX, stroke.endY, stroke.width);
+        if (rect.width < 3 && rect.height < 3) {
+          ctx.beginPath();
+          ctx.arc(stroke.startX, stroke.startY, stroke.width / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          drawRoundedRect(ctx, rect.x, rect.y, rect.width, rect.height, rect.radius);
+          ctx.save();
+          ctx.globalAlpha = alpha * 0.09;
+          ctx.fill();
+          ctx.restore();
+          ctx.stroke();
+        }
+      } else {
+        const pts = stroke.points;
+        if (!pts || pts.length === 0) {
+          ctx.restore();
+          return false;
+        }
+        ctx.beginPath();
+        if (pts.length === 1) {
+          ctx.arc(pts[0].x, pts[0].y, stroke.width / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length - 1; i++) {
+            const midX = (pts[i].x + pts[i + 1].x) / 2;
+            const midY = (pts[i].y + pts[i + 1].y) / 2;
+            ctx.quadraticCurveTo(pts[i].x, pts[i].y, midX, midY);
+          }
+          ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
       return true;
     });
   }
 
-  function shouldDraw(e) {
-    if (!settings.enabled) return false;
-    if (settings.drawModifier === "shift") return e.shiftKey;
-    if (settings.drawModifier === "alt") return e.altKey;
-    if (settings.drawModifier === "always") return true;
-    return e.shiftKey;
+  function clearDrawings(showFeedback = true) {
+    strokes = [];
+    drawing = false;
+    currentStroke = null;
+    if (ctx && canvasEl) {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    }
+    if (showFeedback) {
+      showToast(t("toastCleared", null, "Zeichnungen gelöscht"));
+    }
   }
 
-  // 9. Event Listeners
+  function undoLastDrawing(showFeedback = true) {
+    if (strokes.length === 0) return false;
+    if (drawing) {
+      drawing = false;
+      currentStroke = null;
+    }
+    strokes.pop();
+    renderCanvasStrokes();
+    if (showFeedback) {
+      showToast(t("toastUndo", null, "Letzte Markierung rückgängig"));
+    }
+    startMainLoop();
+    return true;
+  }
+
+  function beginDraw(x, y) {
+    const now = performance.now();
+    drawing = true;
+    currentStroke = {
+      tool: settings.inkTool || "freehand",
+      color: settings.color || "#8E5AF7",
+      width: settings.strokeWidth || 4,
+      startX: x,
+      startY: y,
+      endX: x,
+      endY: y,
+      lastTime: now,
+      points: [{ x, y, time: now }]
+    };
+    strokes.push(currentStroke);
+    startMainLoop();
+  }
+
+  function continueDraw(x, y) {
+    if (!drawing || !currentStroke) return;
+    const now = performance.now();
+    currentStroke.endX = x;
+    currentStroke.endY = y;
+    currentStroke.lastTime = now;
+
+    if (currentStroke.tool === "freehand") {
+      const pts = currentStroke.points;
+      const lastPt = pts[pts.length - 1];
+      if (!lastPt || lastPt.x !== x || lastPt.y !== y) {
+        pts.push({ x, y, time: now });
+      }
+    }
+    startMainLoop();
+  }
+
+  function finishDraw(x, y) {
+    if (!drawing) return;
+    drawing = false;
+    if (currentStroke) {
+      const now = performance.now();
+      currentStroke.endX = x;
+      currentStroke.endY = y;
+      currentStroke.lastTime = now;
+      if (currentStroke.tool === "freehand") {
+        currentStroke.points.push({ x, y, time: now });
+      }
+    }
+    currentStroke = null;
+    startMainLoop();
+  }
+
+  function cancelHideTimer() {
+    if (hideExitTimer) {
+      clearTimeout(hideExitTimer);
+      hideExitTimer = null;
+    }
+  }
+
   function handleCursorMove(clientX, clientY) {
     if (!isExtensionValid()) {
       handleExtensionInvalidated();
       return;
     }
+    cancelHideTimer();
 
     mouseX = clientX;
     mouseY = clientY;
     if (!isMouseInside) {
       isMouseInside = true;
+      prevFrameX = clientX;
+      prevFrameY = clientY;
       updateCursorVisibility();
     }
 
@@ -825,26 +1041,79 @@
       startMainLoop();
     }
 
-    if (drawing && currentStroke) {
-      const pts = currentStroke.points;
-      const lastPt = pts[pts.length - 1];
-      if (!lastPt || lastPt.x !== clientX || lastPt.y !== clientY) {
-        pts.push({ x: clientX, y: clientY, time: performance.now() });
-      }
-      startMainLoop();
+    if (drawing) {
+      continueDraw(clientX, clientY);
     }
   }
 
   function hidePointerOnExit() {
+    cancelHideTimer();
     isMouseInside = false;
     if (pointerEl) pointerEl.style.display = "none";
     if (rodEl) rodEl.style.display = "none";
+    if (ferruleEl) ferruleEl.style.display = "none";
+    updateSpotlightVisuals(false);
     if (drawing) {
       drawing = false;
       currentStroke = null;
     }
     updateCursorVisibility();
   }
+
+  function scheduleHidePointerOnExit() {
+    cancelHideTimer();
+    // 60ms grace prevents 1-frame flicker across out-of-process <iframe> transitions
+    hideExitTimer = setTimeout(() => {
+      hideExitTimer = null;
+      hidePointerOnExit();
+    }, 60);
+  }
+
+  // Receive coordinate events bridged from child <iframe> elements
+  window.addEventListener("message", (e) => {
+    const data = e.data;
+    if (!data || data.__tinyhandBridge !== "v1") return;
+    if (!settings.enabled) return;
+
+    if (data.kind === "clear") {
+      clearDrawings(true);
+      return;
+    }
+    if (data.kind === "undo") {
+      undoLastDrawing(true);
+      return;
+    }
+    if (data.kind === "leave") {
+      scheduleHidePointerOnExit();
+      return;
+    }
+
+    if (!Number.isFinite(data.clientX) || !Number.isFinite(data.clientY)) return;
+    const childEl = findChildFrameElement(e.source);
+    if (!childEl) return;
+    const { x, y } = translateFramePoint(childEl, data.clientX, data.clientY);
+
+    if (data.kind === "move") {
+      handleCursorMove(x, y);
+    } else if (data.kind === "down") {
+      handleCursorMove(x, y);
+      if (data.button === 0) {
+        if (shouldDrawWithState(data.shiftKey, data.altKey)) {
+          beginDraw(x, y);
+        } else {
+          triggerClickFeedback(x, y, "left");
+        }
+      } else if (data.button === 2) {
+        triggerClickFeedback(x, y, "right");
+      }
+    } else if (data.kind === "up") {
+      if (data.button === 0 && drawing) {
+        finishDraw(x, y);
+      }
+    } else if (data.kind === "dblclick") {
+      triggerClickFeedback(x, y, "double");
+    }
+  });
 
   window.addEventListener("resize", () => {
     resizeCanvas();
@@ -861,13 +1130,18 @@
     }
   }, { capture: true, passive: true });
 
-  document.addEventListener("mouseleave", hidePointerOnExit);
-  window.addEventListener("blur", hidePointerOnExit);
+  document.addEventListener("mouseleave", scheduleHidePointerOnExit);
+  window.addEventListener("blur", () => {
+    // Do not hide overlay merely because user clicked inside an embedded <iframe> on this page
+    if (document.hasFocus() || document.activeElement?.tagName === "IFRAME") return;
+    hidePointerOnExit();
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) hidePointerOnExit();
   });
 
   document.addEventListener("mouseenter", (e) => {
+    cancelHideTimer();
     isMouseInside = true;
     mouseX = e.clientX;
     mouseY = e.clientY;
@@ -883,59 +1157,73 @@
   });
 
   window.addEventListener("mousedown", (e) => {
-    if (e.button !== 0) return; // Left mouse click only
-
-    if (shouldDraw(e)) {
-      e.preventDefault(); // Prevent accidental text selection while drawing ink
-      drawing = true;
-      currentStroke = {
-        color: settings.color,
-        width: settings.strokeWidth,
-        points: [{ x: e.clientX, y: e.clientY, time: performance.now() }]
-      };
-      strokes.push(currentStroke);
-      startMainLoop();
-    } else {
-      // Normal click: trigger visual tap & ripple
-      triggerClickFeedback(e.clientX, e.clientY);
+    if (!settings.enabled) return;
+    if (e.button === 0) {
+      if (shouldDrawWithState(e.shiftKey, e.altKey)) {
+        e.preventDefault();
+        beginDraw(e.clientX, e.clientY);
+      } else {
+        triggerClickFeedback(e.clientX, e.clientY, "left");
+      }
+    } else if (e.button === 2) {
+      triggerClickFeedback(e.clientX, e.clientY, "right");
     }
   }, true);
 
   window.addEventListener("mouseup", (e) => {
     if (e.button === 0 && drawing) {
-      drawing = false;
-      if (currentStroke) {
-        currentStroke.points.push({ x: e.clientX, y: e.clientY, time: performance.now() });
-      }
-      currentStroke = null;
-      startMainLoop();
+      finishDraw(e.clientX, e.clientY);
     }
   }, true);
 
-  // Keyboard shortcut fallback inside page (Alt+C to clear drawings)
+  window.addEventListener("dblclick", (e) => {
+    if (!settings.enabled) return;
+    if (!shouldDrawWithState(e.shiftKey, e.altKey)) {
+      triggerClickFeedback(e.clientX, e.clientY, "double");
+    }
+  }, { capture: true, passive: true });
+
+  function isEditableTarget(target) {
+    if (!target || !(target instanceof Element)) return false;
+    const tag = target.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target.isContentEditable;
+  }
+
   window.addEventListener("keydown", (e) => {
-    if (e.altKey && (e.key === "c" || e.key === "C")) {
-      strokes = [];
-      if (ctx && canvasEl) {
-        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    if (!settings.enabled) return;
+    const k = e.key.toLowerCase();
+    if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && k === "c") {
+      clearDrawings(true);
+    } else if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && k === "z") {
+      if (strokes.length > 0) {
+        e.preventDefault();
+        undoLastDrawing(true);
       }
-      showToast("Zeichnungen gelöscht (Alt+C)");
+    } else if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && k === "z") {
+      if (strokes.length > 0 && !isEditableTarget(e.target)) {
+        e.preventDefault();
+        undoLastDrawing(true);
+      }
     }
   });
 
-  // 10. Chrome Runtime & Storage Integration
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.type === "CLEAR_DRAWINGS") {
-      strokes = [];
-      if (ctx && canvasEl) {
-        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      }
-      showToast("Zeichnungen gelöscht");
+    if (!msg || typeof msg.type !== "string") return false;
+    if (msg.type === "PING") {
+      sendResponse({ ok: true });
+    } else if (msg.type === "GET_HOST") {
+      sendResponse({ host: window.location.hostname || "" });
+    } else if (msg.type === "CLEAR_DRAWINGS") {
+      clearDrawings(true);
       sendResponse({ success: true });
+    } else if (msg.type === "UNDO_DRAWING") {
+      const undone = undoLastDrawing(true);
+      sendResponse({ success: undone });
     } else if (msg.type === "TINYHAND_TOAST") {
       showToast(msg.message);
       sendResponse({ success: true });
     }
+    return false;
   });
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
@@ -951,18 +1239,26 @@
     }
     updatePointerVisuals();
     if (!settings.enabled) {
-      strokes = [];
-      if (ctx && canvasEl) {
-        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      }
+      clearDrawings(false);
     }
   });
 
-  // Load initial settings
+  // Load initial settings, check domain auto-enable, and initialize overlay
   (async function () {
     try {
       const stored = await chrome.storage.local.get(null);
       settings = { ...settings, ...stored };
+
+      const host = GEO.normalizeHostname(window.location.hostname);
+      if (!settings.enabled && host && GEO.isHostnameMatch(host, settings.autoEnableDomains)) {
+        try {
+          const res = await chrome.runtime.sendMessage({ type: "AUTO_ENABLE_DOMAIN", host });
+          if (res?.activated) {
+            settings.enabled = true;
+            setTimeout(() => showToast(res.message), 120);
+          }
+        } catch (_) {}
+      }
     } catch (err) {
       console.error("TinyHand storage read error:", err);
     }

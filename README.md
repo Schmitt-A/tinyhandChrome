@@ -2,7 +2,7 @@
 
 # tinyhandChrome
 
-[![Latest release](https://img.shields.io/badge/release-v1.4.0-blue.svg)](https://github.com/Schmitt-A/tinyhandChrome/releases)
+[![Latest release](https://img.shields.io/badge/release-v1.5.0-blue.svg)](https://github.com/Schmitt-A/tinyhandChrome/releases)
 [![Platform: Chrome / Chromium](https://img.shields.io/badge/platform-Chrome%20%7C%20Brave%20%7C%20Edge-lightgrey.svg)](https://github.com/Schmitt-A/tinyhandChrome)
 [![Manifest V3](https://img.shields.io/badge/manifest-v3-success.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -63,10 +63,12 @@ git clone https://github.com/Schmitt-A/tinyhandChrome.git tinyhandChrome
 | Tastenkürzel (macOS) | Tastenkürzel (Win / Linux) | Aktion |
 | :--- | :--- | :--- |
 | <kbd>⌥ Option</kbd> + <kbd>H</kbd> | <kbd>Alt</kbd> + <kbd>H</kbd> | **tinyhandChrome Ein / Aus** (Zeiger aktivieren oder verbergen) |
+| <kbd>⌥ Option</kbd> + <kbd>F</kbd> | <kbd>Alt</kbd> + <kbd>F</kbd> | **Fokus-Spotlight Ein / Aus** (dunkelt Umgebung um den Zeiger ab) |
 | <kbd>⌥ Option</kbd> + <kbd>C</kbd> | <kbd>Alt</kbd> + <kbd>C</kbd> | **Zeichnungen leeren** (Löscht sofort alle Markierungen) |
-| <kbd>⌥ Option</kbd> + <kbd>S</kbd> | <kbd>Alt</kbd> + <kbd>S</kbd> | **Schnell-Stilwechsel** (wechselt durch die Favoriten) |
-| <kbd>⇧ Shift</kbd> + **Maus ziehen** | <kbd>Shift</kbd> + **Maus ziehen** | **Freihand zeichnen** (verblasst nach ca. 3s automatisch) |
-| **Normaler Linksklick** | **Normaler Linksklick** | Normale Webseiten-Bedienung + Klick-Tap & Ripple-Effekt |
+| <kbd>⌥ Option</kbd> + <kbd>S</kbd> | <kbd>Alt</kbd> + <kbd>S</kbd> | **Favoriten-Stilwechsel** (wechselt durch deine `★`-Favoriten) |
+| <kbd>⇧ Shift</kbd> + **Maus ziehen** | <kbd>Shift</kbd> + **Maus ziehen** | **Zeichnen & Markieren** (Freihand, Pfeil oder Rahmen; Standard ~3s Fade) |
+| <kbd>⌘ Cmd</kbd> + <kbd>Z</kbd> | <kbd>Ctrl</kbd> + <kbd>Z</kbd> | **Rückgängig** (Entfernt die letzte Zeichnung / Markierung) |
+| **Links / Rechts / Doppelklick** | **Links / Rechts / Doppelklick** | Normale Seitenbedienung + unterscheidbares Klick-Ripple-Feedback |
 
 > [!TIP]
 > Tastenkombinationen können jederzeit im Popup über **„Tastenkombinationen anpassen ⚙️“** oder direkt unter `chrome://extensions/shortcuts` frei belegt werden.
@@ -75,57 +77,36 @@ git clone https://github.com/Schmitt-A/tinyhandChrome.git tinyhandChrome
 
 ## ✨ Features
 
-- 👆 **36 authentische 3D-Zeigerstile:**  
-  Umfangreiche Galerie hochwertiger Zeigerhände direkt aus TinyHand: Lavender Toy (Standard), Plush Mitt, Robot Hand, Coral Vinyl, Cursor Glove, Desert Cactus, Turned Wood, Astronaut, Midnight, Sky, Chocolate, Chrome, Cloud, Gingerbread, Fuzzy, Glass, Grass, Holo, Jelly, Knit, Lava, Leaf, Lemon, Low Poly, Marble, Mech, Mint, Monster, Cyber Neon, Pastel, Bubblegum Pink, 8-Bit Pixel, Spooky Skeleton, Space, Terrazzo, Water sowie ein minimalistischer **Laser-Dot** Präsentationspunkt.
+- 👆 **36 authentische 3D-Zeigerstile + Durchsuchbare Bild-Galerie:**  
+  Große visuelle Miniatur-Galerie mit Suche und Kategorien (*Klassik*, *Material*, *Kreativ*) sowie **individuellen `★`-Favoriten** für den Schnellwechsel per <kbd>Alt+S</kbd>. Enthält u. a. Lavender Toy (Standard), Plush Mitt, Robot Hand, Coral Vinyl, Cursor Glove, Cactus, Wood, Astronaut, Chrome, Holo, Marble, Terrazzo, Monster, Neon, Pixel, Skeleton sowie den minimalistischen **Laser-Dot**.
 
-- 🎯 **Eigene Zeiger hochladen & Live-Kalibrierung:**  
-  Lade beliebige eigene PNG-, SVG- oder WebP-Grafiken als Zeiger hoch. Dank der interaktiven **Fadenkreuz-Kalibrierung** im Einstellungsmenü lässt sich die genaue Position der Fingerspitze bzw. des Klickpunkts millimetergenau justieren.
+- 🔦 **Fokus-Spotlight-Modus (<kbd>Alt+F</kbd>):**  
+  Dunkelt auf Knopfdruck die übrige Webseite weich ab und hebt einen hellen Lichtkreis um den Zeiger hervor – mit stufenlosem Fokus-Radius (`80–340 px`) und Abdunklung (`15%–85%`). Zeichnungen bleiben dabei voll leuchtend.
 
-- 📐 **Rechtwinklige Stabgeometrie (90°):**  
-  Der Zeigestab tritt stets exakt senkrecht und zentriert in die Handmanschette ein – kein krummes oder schiefes Aufsitzen mehr bei schrägen Fingerwinkeln.
+- ✍️ **Präsentations-Zeichenwerkzeuge & Rückgängig:**  
+  - Wählbare Formen: **Freihand**, **Pfeil** (mit sauberer Spitze) und **Markierungsrahmen** (abgerundetes Highlight-Rechteck).
+  - **Rückgängig (<kbd>Cmd/Ctrl+Z</kbd> / <kbd>Alt+Z</kbd>)** und Direkt-Buttons (*Rückgängig*, *Alles leeren*) direkt im Popup.
+  - Auslöser wählbar (<kbd>Shift</kbd>, <kbd>Alt</kbd> oder *Immer bei Klick*), 5 Neon-Presets + Farbpicker, 3 Strichstärken und Verblassdauer (2s, 3s, 5s oder dauerhaft).
 
-- 🪄 **Flexible Verankerungs-Modi:**
-  - **Unten rechts (wandert am Rand mit):** Klassische Rechtsausrichtung – die Stabbasis gleitet geschmeidig am unteren Bildschirmrand mit dem Cursor mit.
-  - **Unten links (wandert am Rand mit):** Gespiegelte Linksausrichtung mit mitwandernder Stabbasis entlang des unteren Rands.
-  - **Dynamisch von unten:** Die Basis wandert direkt mittig unter dem Cursor mit und neigt sich leicht zu den Bildschirmrändern hin.
-  - **Unten rechts / links (feste Ecke):** Optional fest verankert in einer Bildschirmecke ohne Mitwandern.
-  - **Frei schwebend:** Hand ohne langen Stab mit stufenlos einstellbarem Grundneigungswinkel (-60° bis +60°) und automatischer Bewegungsneigung.
+- 🎯 **Eigene Zeiger hochladen, Spiegeln & Dual-Kalibrierung:**  
+  PNG-, SVG- oder WebP-Grafiken bis 2 MB hochladen (übergroße Rasterbilder werden beim Upload automatisch auf max. 512 px optimiert). Im Kalibrierfeld lassen sich sowohl die **Klickspitze** als auch der **Stab-Ansatz** exakt justieren und die Grafik bei Bedarf **horizontal spiegeln**.
 
-- 📏 **Stufenlose Skalierung & 3D-Tiefe:**
-  - **Zeigergröße (60 – 320 px):** Frei stufenlos anpassbar für jede Bildschirmauflösung (Full HD, 4K, Ultrawide).
-  - **Stabbreite (2 – 24 px):** Mathematisch konstante Stabbreite in allen Richtungen, Entfernungen und Winkeln.
-  - **Schatten & 3D-Tiefe (0% – 100%):** Einstellbarer räumlicher Drop-Shadow für Hand und Stab.
+- 🪄 **Rechtwinklige Stabgeometrie, wählbare Stab-Optik & Metallmanschette:**  
+  - Exakt rechtwinklig (90°) zur Manschette ausgerichteter 3D-Zeigestab mit realistischer **Metall-/Farbmanschette (Ferrule)**.
+  - Frei wählbares Stab-Material (*Auto passend zum Zeiger*, *Carbon*, *Holz & Messing*, *Lack-Weiß & Silber*, *Gebürstetes Aluminium*).
+  - 6 Verankerungs-Modi: *Unten rechts / links (mitwandernd)*, *Dynamisch mittig*, *Feste Ecke rechts / links* oder *Frei schwebend* (-60° bis +60°).
 
-- 🫁 **Natürliche Bewegungsdynamik & Atembewegung:**  
-  Zwei feinfühlige Schieberegler für organische Bewegung:
-  - **Trägheit & Bewegungsdynamik (0% – 200%):** Für geschmeidige, ruckelfreie Verfolgung des Cursors.
-  - **Schweben & Atmen im Stillstand (0% – 200%):** Sanfte, lebendige Auf- und Abbewegung bei ruhender Maus.
+- 💥 **Konfigurierbares Klick-Feedback:**  
+  Visuelle Unterscheidung von **Linksklick**, **Rechtsklick** (amberfarben gestrichelter Ring) und **Doppelklick** (Doppelwelle) – jederzeit im Popup an- oder abschaltbar.
 
-- ✍️ **Verblassende Freihand-Tinte (Ephemeral Ink):**  
-  Spontanes Zeichnen und Einkreisen wichtiger Inhalte direkt auf der Webseite:
-  - Auslöser wählbar: <kbd>Shift</kbd> + Ziehen, <kbd>Alt</kbd> + Ziehen oder immer bei Klick.
-  - 5 leuchtende Farb-Presets (Neon-Rot, Neon-Gelb, Neon-Grün, Cyan, Weiß) + unbegrenzter HTML5-Farbpicker.
-  - 3 Strichstärken: Dünn (3px), Mittel (4px), Dick (7px).
-  - Automatische Verblassdauer: 2s, 3s, 5s oder dauerhaft.
-  - Sofortiges Leeren per Shortcut (<kbd>Alt+C</kbd> / <kbd>⌥+C</kbd>).
+- ⚡ **Sofort aktiv ohne Tab-Reload & Iframe-Unterstützung:**  
+  Bereits vor der Installation oder einem Update geöffnete Tabs werden automatisch injiziert – kein F5 nötig. Dank Koordinaten-Bridge funktioniert der Zeiger auch über eingebettete `<iframe>`-Präsentationen hinweg (z. B. eingebettete Slides oder PDFs).
 
-- 💥 **Klick-Tap & leuchtender Ripple-Halo:**  
-  Jeder Klick löst eine sanfte Eintauch-Bewegung (Tap) der Hand und einen leuchtenden Puls-Effekt (Ripple) an der Fingerspitze aus.
+- 🌐 **Website-Automatik & Mehrsprachigkeit:**  
+  Domains wie `meet.google.com` mit einem Klick für den Auto-Start vormerken. Zweisprachige Oberfläche (Deutsch & Englisch über Chrome `_locales`), dynamische Anzeige deiner echten Tastenkürzel aus Chrome sowie Ein-Klick-Reset auf Standardwerte.
 
-- 👁️ **Mauszeiger-Steuerung:**  
-  Optionales Verstecken des nativen Betriebssystem-Mauszeigers (`cursor: none`), sodass die Zuschauer ausschließlich die Zeigerhand sehen.
-
-- 🛡️ **Isoliertes Shadow DOM (Zero Leaks):**  
-  Alle Elemente laufen in einem geschlossenen Web Components Shadow DOM. Kein Webseiten-CSS kann die Darstellung stören, und es entstehen keinerlei Seiteneffekte auf den DOM-Baum der besuchten Website.
-
-- ⚡ **Präsentationssicher:**  
-  Fängt niemals die <kbd>Escape</kbd>-Taste ab – Vollbild-Präsentationen, Slideshows und Videoplayer bleiben uneingeschränkt bedienbar.
-
-- ⌨️ **Frei anpassbare Shortcuts:**  
-  Alle Tastenkombinationen können im Einstellungsmenü mit einem Klick in der systemweiten Chrome-Tastenverwaltung frei belegt werden.
-
-- 🔒 **100% Datenschutz:**  
-  Alle Berechnungen finden rein lokal im Browser statt. Keine Analytik, kein Tracking, keine externen Serveranfragen.
+- 🛡️ **Geschlossenes Shadow DOM & 100% Datenschutz:**  
+  Alle Overlay-Elemente laufen isoliert in einem geschlossenen (`closed`) Shadow DOM ohne Seiteneffekte. Alles läuft rein lokal im Browser – keine Analytik, kein Tracking, keine externen Anfragen.
 
 ---
 

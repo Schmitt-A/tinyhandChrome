@@ -1,0 +1,317 @@
+{
+  "extName": {
+    "message": "tinyhandChrome"
+  },
+  "extDescription": {
+    "message": "Virtual presenter pointer, spotlight & drawing ink for Chrome tab screen-sharing (BigBlueButton, Google Meet, Zoom)."
+  },
+  "actionTitle": {
+    "message": "tinyhandChrome Settings"
+  },
+  "cmdToggleDesc": {
+    "message": "Toggle tinyhandChrome pointer on/off"
+  },
+  "cmdClearDesc": {
+    "message": "Clear all drawings immediately"
+  },
+  "cmdSwitchDesc": {
+    "message": "Switch to next favorite pointer style"
+  },
+  "cmdSpotlightDesc": {
+    "message": "Toggle focus spotlight on/off"
+  },
+  "popupSubtitle": {
+    "message": "Tab-Share Overlay • v1.5.0"
+  },
+  "toggleMasterTitle": {
+    "message": "Toggle tinyhandChrome (Alt+H)"
+  },
+  "sectionStyleLabel": {
+    "message": "Pointer Style"
+  },
+  "styleCustom": {
+    "message": "Custom"
+  },
+  "styleAllCatalog": {
+    "message": "All 36"
+  },
+  "gallerySummary": {
+    "message": "Browse all 36 TinyHand pointers"
+  },
+  "gallerySearchPlaceholder": {
+    "message": "Search pointer (e.g. Astro, Neon, Wood)..."
+  },
+  "filterAll": {
+    "message": "All"
+  },
+  "filterHands": {
+    "message": "Classic"
+  },
+  "filterMaterial": {
+    "message": "Materials"
+  },
+  "filterCreative": {
+    "message": "Creative"
+  },
+  "galleryStarHint": {
+    "message": "Starred pointers rotate on Alt+S"
+  },
+  "galleryEmpty": {
+    "message": "No pointer matched your search."
+  },
+  "customActiveText": {
+    "message": "Custom image active"
+  },
+  "btnRemove": {
+    "message": "Remove"
+  },
+  "uploadSizeError": {
+    "message": "Please choose an image smaller than 2 MB."
+  },
+  "calibrationTipMode": {
+    "message": "Click Tip"
+  },
+  "calibrationCuffMode": {
+    "message": "Stick Cuff"
+  },
+  "calibrationFlipX": {
+    "message": "Flip graphic horizontally"
+  },
+  "calibrationHintTip": {
+    "message": "Click or drag on the image to set the fingertip click hotspot."
+  },
+  "calibrationHintCuff": {
+    "message": "Click or drag on the image to set where the pointer rod attaches."
+  },
+  "btnDefault": {
+    "message": "Default"
+  },
+  "labelSize": {
+    "message": "Pointer Size"
+  },
+  "labelRodWidth": {
+    "message": "Stick Width"
+  },
+  "labelRodTheme": {
+    "message": "Stick Material"
+  },
+  "rodThemeAuto": {
+    "message": "Match pointer style (Auto)"
+  },
+  "rodThemeCarbon": {
+    "message": "Obsidian Carbon"
+  },
+  "rodThemeWood": {
+    "message": "Warm Hardwood & Brass"
+  },
+  "rodThemeWhite": {
+    "message": "Glossy White & Silver"
+  },
+  "rodThemeSteel": {
+    "message": "Brushed Aluminum"
+  },
+  "labelShadow": {
+    "message": "Shadow & 3D Depth"
+  },
+  "checkHideCursor": {
+    "message": "Hide native cursor behind hand"
+  },
+  "checkClickRipple": {
+    "message": "Click halo (Left / Right / Double-click)"
+  },
+  "checkSpotlight": {
+    "message": "Focus Spotlight (dims background)"
+  },
+  "labelSpotlightRadius": {
+    "message": "Spotlight Radius"
+  },
+  "labelSpotlightOpacity": {
+    "message": "Dimming Intensity"
+  },
+  "labelStickOrigin": {
+    "message": "Stick Anchor & Movement"
+  },
+  "originBottomRight": {
+    "message": "Bottom right (glides along edge) • Default"
+  },
+  "originBottomLeft": {
+    "message": "Bottom left (glides along edge)"
+  },
+  "originDynamic": {
+    "message": "Dynamic center-bottom (follows cursor)"
+  },
+  "originBottomRightFixed": {
+    "message": "Bottom right (fixed corner)"
+  },
+  "originBottomLeftFixed": {
+    "message": "Bottom left (fixed corner)"
+  },
+  "originFloating": {
+    "message": "Free floating (no stick)"
+  },
+  "labelFloatingAngle": {
+    "message": "Pointer Tilt"
+  },
+  "checkFloatingDynamic": {
+    "message": "Tilt dynamically with movement & position"
+  },
+  "checkIdleAnim": {
+    "message": "Enable subtle organic animations"
+  },
+  "labelAnimMotion": {
+    "message": "Movement Inertia & Swing"
+  },
+  "labelAnimBreathe": {
+    "message": "Idle Breathing & Float"
+  },
+  "sectionInkLabel": {
+    "message": "Drawing & Annotations"
+  },
+  "toolFreehand": {
+    "message": "Freehand"
+  },
+  "toolArrow": {
+    "message": "Arrow"
+  },
+  "toolRect": {
+    "message": "Frame"
+  },
+  "labelStrokeWidth": {
+    "message": "Stroke Width"
+  },
+  "widthThin": {
+    "message": "Thin (3px)"
+  },
+  "widthMedium": {
+    "message": "Medium (4px)"
+  },
+  "widthThick": {
+    "message": "Thick (7px)"
+  },
+  "labelFadeDuration": {
+    "message": "Auto-Fade"
+  },
+  "fade2s": {
+    "message": "2 seconds"
+  },
+  "fade3s": {
+    "message": "3 seconds"
+  },
+  "fade5s": {
+    "message": "5 seconds"
+  },
+  "fadePermanent": {
+    "message": "Permanent"
+  },
+  "labelDrawModifier": {
+    "message": "Draw Trigger"
+  },
+  "modShift": {
+    "message": "Shift + Drag mouse"
+  },
+  "modAlt": {
+    "message": "Alt/Option + Drag mouse"
+  },
+  "modAlways": {
+    "message": "Always on left-drag (Draw mode)"
+  },
+  "btnUndoDrawing": {
+    "message": "Undo Last"
+  },
+  "btnClearDrawings": {
+    "message": "Clear All"
+  },
+  "sectionAutoStart": {
+    "message": "Website Auto-Start"
+  },
+  "autoDomainToggle": {
+    "message": "Auto-enable on $HOST$",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  },
+  "autoDomainUnavailable": {
+    "message": "Unavailable on browser internal pages"
+  },
+  "sectionShortcuts": {
+    "message": "Keyboard Shortcuts"
+  },
+  "scToggle": {
+    "message": "Pointer On / Off"
+  },
+  "scSpotlight": {
+    "message": "Focus Spotlight"
+  },
+  "scClear": {
+    "message": "Clear Drawings"
+  },
+  "scSwitch": {
+    "message": "Cycle Favorites"
+  },
+  "scDraw": {
+    "message": "Draw Shape / Ink"
+  },
+  "scUndo": {
+    "message": "Undo Last Mark"
+  },
+  "scDragHint": {
+    "message": "Shift + Drag"
+  },
+  "scUnassigned": {
+    "message": "Not set"
+  },
+  "btnConfigureShortcuts": {
+    "message": "Customize Shortcuts"
+  },
+  "shortcutsHint": {
+    "message": "Opens Chrome extension shortcuts settings to customize keybindings."
+  },
+  "btnResetDefaults": {
+    "message": "Reset to Defaults"
+  },
+  "resetConfirmText": {
+    "message": "Reset all settings?"
+  },
+  "btnConfirmYes": {
+    "message": "Reset"
+  },
+  "btnCancel": {
+    "message": "Cancel"
+  },
+  "toastActivated": {
+    "message": "tinyhandChrome: Enabled (Shift+Drag to draw)"
+  },
+  "toastDeactivated": {
+    "message": "tinyhandChrome: Disabled"
+  },
+  "toastCleared": {
+    "message": "Drawings cleared"
+  },
+  "toastUndo": {
+    "message": "Last drawing undone"
+  },
+  "toastStyle": {
+    "message": "tinyhandChrome Style: $STYLE$",
+    "placeholders": {
+      "style": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastSpotlightOn": {
+    "message": "Focus Spotlight: On"
+  },
+  "toastSpotlightOff": {
+    "message": "Focus Spotlight: Off"
+  },
+  "toastAutoDomain": {
+    "message": "tinyhandChrome: Auto-enabled for $HOST$",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  }
+}

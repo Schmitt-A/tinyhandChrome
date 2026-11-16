@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "tinyhandChrome",
-  "version": "1.4.0",
-  "description": "Präsentations-Zeiger & verblassende Freihand-Zeichnungen für Chrome-Tab Bildschirmfreigaben (BigBlueButton, Google Meet, Zoom)",
+  "name": "__MSG_extName__",
+  "version": "1.5.0",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -17,14 +18,15 @@
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     },
-    "default_title": "tinyhandChrome Einstellungen"
+    "default_title": "__MSG_actionTitle__"
   },
   "background": {
     "service_worker": "background.js"
   },
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -35,21 +37,28 @@
         "default": "Alt+H",
         "mac": "Alt+H"
       },
-      "description": "tinyhandChrome Zeiger ein-/ausschalten"
+      "description": "__MSG_cmdToggleDesc__"
     },
     "clear-drawings": {
       "suggested_key": {
         "default": "Alt+C",
         "mac": "Alt+C"
       },
-      "description": "Alle Zeichnungen sofort leeren"
+      "description": "__MSG_cmdClearDesc__"
     },
     "switch-style": {
       "suggested_key": {
         "default": "Alt+S",
         "mac": "Alt+S"
       },
-      "description": "Nächsten Zeiger-Stil wählen"
+      "description": "__MSG_cmdSwitchDesc__"
+    },
+    "toggle-spotlight": {
+      "suggested_key": {
+        "default": "Alt+F",
+        "mac": "Alt+F"
+      },
+      "description": "__MSG_cmdSpotlightDesc__"
     }
   },
   "content_scripts": [
@@ -57,7 +66,9 @@
       "matches": [
         "<all_urls>"
       ],
+      "all_frames": true,
       "js": [
+        "content/geometry.js",
         "content/content.js"
       ],
       "run_at": "document_idle"
@@ -66,7 +77,6 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "content/overlay.css",
         "hands/*",
         "icons/*"
       ],

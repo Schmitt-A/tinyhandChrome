@@ -1,34 +1,21 @@
 /**
- * TinyHand for Chrome - Background Service Worker
- * Manages defaults, keyboard commands, and badge status.
+ * tinyhandChrome - Background Service Worker (MV3)
+ * Manages defaults, keyboard commands, live tab injection, auto-enable domains, and badge status.
  */
 
-const DEFAULT_SETTINGS = {
-  enabled: false,           // On-demand default
-  style: "lavender",        // Authentic TinyHand signature default
-  size: 160,                // px (authentic prominent TinyHand size)
-  rodWidth: 7,              // px (width of pointer rod)
-  shadowIntensity: 50,      // % (depth shadow under hand and rod)
-  color: "#8E5AF7",         // Default purple matching Lavender hand
-  strokeWidth: 4,           // px
-  fadeDuration: 3000,       // 3 seconds auto-fade
-  drawModifier: "shift",    // "shift" | "alt" | "always"
-  hideNativeCursor: true,   // Hide standard mouse cursor behind hand
-  stickOrigin: "bottom-right", // "bottom-right" | "bottom-left" | "dynamic" | "floating"
-  floatingAngle: -15,       // deg (tilt angle for floating mode)
-  floatingDynamic: true,    // dynamically tilt floating hand according to movement & position
-  idleAnimation: true,      // Master switch for animations
-  animMotionStrength: 100,  // % (movement inertia & tilt strength)
-  animBreatheStrength: 100, // % (idle breathing & float strength)
-  customImage: null,        // Data URL if uploaded
-  customHotspot: { x: 0.5, y: 0.2 }, // Relative hotspot (0..1)
-  customAspect: 1.4         // Aspect ratio width/height
-};
+importScripts("content/geometry.js");
 
-// Pinned styles from nilbuild/tinyhand default toolbar
-const STYLES = ["lavender", "glove", "coral", "plush", "robot", "laser"];
+const GEO = globalThis.__TINYHAND_GEO__;
+const DEFAULT_SETTINGS = GEO.DEFAULT_SETTINGS;
 
-// Force Chrome to refresh action icon in toolbar and pinned menu
+function t(key, substitutions, fallback) {
+  try {
+    const msg = chrome.i18n?.getMessage?.(key, substitutions);
+    if (msg) return msg;
+  } catch (_) {}
+  return fallback;
+}
+
 async function refreshIcon() {
   try {
     await chrome.action.setIcon({
@@ -44,25 +31,6 @@ async function refreshIcon() {
   }
 }
 
-// Initialize settings on installation
-chrome.runtime.onInstalled.addListener(async () => {
-  await refreshIcon();
-  const existing = await chrome.storage.local.get(null);
-  const toSet = {};
-  for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
-    if (existing[key] === undefined) {
-      toSet[key] = value;
-    }
-  }
-  if (Object.keys(toSet).length > 0) {
-    await chrome.storage.local.set(toSet);
-  }
-  await updateBadge(existing.enabled ?? DEFAULT_SETTINGS.enabled);
-});
-
-refreshIcon();
-
-// Update extension icon badge
 async function updateBadge(enabled) {
   try {
     if (enabled) {
@@ -76,47 +44,256 @@ async function updateBadge(enabled) {
   }
 }
 
-// React to storage changes (e.g. from popup toggle)
+function isInjectableUrl(url) {
+  if (!url) return false;
+  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://");
+}
+
+async function injectIntoTab(tabId) {
+  if (!tabId) return false;
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId, allFrames: true },
+      files: ["content/geometry.js", "content/content.js"]
+    });
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+async function injectIntoOpenTabs() {
+  try {
+    const tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
+    for (const tab of tabs) {
+      if (tab.id && isInjectableUrl(tab.url)) {
+        await injectIntoTab(tab.id);
+      }
+    }
+  } catch (err) {
+    console.warn("Open-tab injection skipped:", err);
+  }
+}
+
+async function sendToActiveTabWithInject(tab, message) {
+  if (!tab?.id) return false;
+  try {
+    await chrome.tabs.sendMessage(tab.id, message);
+    return true;
+  } catch (_) {
+    if (tab.url && !isInjectableUrl(tab.url)) return false;
+    const injected = await injectIntoTab(tab.id);
+    if (!injected) return false;
+    try {
+      await chrome.tabs.sendMessage(tab.id, message);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+}
+
+async function ensureActiveTabInjected() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return null;
+  try {
+    await chrome.tabs.sendMessage(tab.id, { type: "PING" });
+    return tab;
+  } catch (_) {
+    if (tab.url && !isInjectableUrl(tab.url)) return null;
+    const ok = await injectIntoTab(tab.id);
+    return ok ? tab : null;
+  }
+}
+
+async function markHostDismissed(host, dismissed) {
+  if (!host || !chrome.storage.session) return;
+  try {
+    const { dismissedAutoHosts = {} } = await chrome.storage.session.get("dismissedAutoHosts");
+    const next = { ...dismissedAutoHosts };
+    if (dismissed) {
+      next[host] = true;
+    } else {
+      delete next[host];
+    }
+    await chrome.storage.session.set({ dismissedAutoHosts: next });
+  } catch (_) {}
+}
+
+async function getActiveTabHost() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return null;
+  if (tab.url) {
+    try {
+      return new URL(tab.url).hostname.toLowerCase();
+    } catch (_) {}
+  }
+  try {
+    const res = await chrome.tabs.sendMessage(tab.id, { type: "GET_HOST" });
+    return res?.host || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// Initialize missing default settings and inject into open tabs on install/update
+chrome.runtime.onInstalled.addListener(async () => {
+  await refreshIcon();
+  const existing = await chrome.storage.local.get(null);
+  const toSet = {};
+  for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
+    if (existing[key] === undefined) {
+      toSet[key] = value;
+    }
+  }
+  if (Object.keys(toSet).length > 0) {
+    await chrome.storage.local.set(toSet);
+  }
+  await updateBadge(existing.enabled ?? DEFAULT_SETTINGS.enabled);
+  await injectIntoOpenTabs();
+});
+
+chrome.runtime.onStartup.addListener(async () => {
+  await refreshIcon();
+  const { enabled = false } = await chrome.storage.local.get("enabled");
+  await updateBadge(enabled);
+  await injectIntoOpenTabs();
+});
+
+refreshIcon();
+
+// React to storage changes (e.g. from popup toggle or domain auto-enable)
 chrome.storage.onChanged.addListener(async (changes, areaName) => {
-  if (areaName === "local" && changes.enabled !== undefined) {
-    await updateBadge(changes.enabled.newValue);
+  if (areaName !== "local") return;
+  if (changes.enabled !== undefined) {
+    const nextEnabled = Boolean(changes.enabled.newValue);
+    await updateBadge(nextEnabled);
+    if (nextEnabled) {
+      await ensureActiveTabInjected();
+    }
+    const host = await getActiveTabHost();
+    if (host) {
+      await markHostDismissed(host, !nextEnabled);
+    }
+  }
+  if (changes.spotlight?.newValue === true) {
+    await ensureActiveTabInjected();
   }
 });
 
-// Handle keyboard shortcuts (Alt+H, Alt+C, Alt+S)
+// Messages from Popup or Content Script
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (!msg || typeof msg.type !== "string") return false;
+
+  if (msg.type === "ENSURE_ACTIVE_TAB_INJECTED") {
+    (async () => {
+      const tab = await ensureActiveTabInjected();
+      sendResponse({ ok: Boolean(tab), tabId: tab?.id || null });
+    })();
+    return true;
+  }
+
+  if (msg.type === "RELAY_ACTIVE_TAB_ACTION") {
+    (async () => {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const ok = await sendToActiveTabWithInject(tab, msg.payload);
+      sendResponse({ ok });
+    })();
+    return true;
+  }
+
+  if (msg.type === "AUTO_ENABLE_DOMAIN") {
+    (async () => {
+      const host = GEO.normalizeHostname(msg.host);
+      if (!host) {
+        sendResponse({ activated: false });
+        return;
+      }
+      const { enabled = false, autoEnableDomains = [] } = await chrome.storage.local.get([
+        "enabled",
+        "autoEnableDomains"
+      ]);
+      if (enabled || !GEO.isHostnameMatch(host, autoEnableDomains)) {
+        sendResponse({ activated: false });
+        return;
+      }
+      let dismissed = false;
+      try {
+        const { dismissedAutoHosts = {} } = await chrome.storage.session.get("dismissedAutoHosts");
+        dismissed = Boolean(dismissedAutoHosts[host]);
+      } catch (_) {}
+
+      if (dismissed) {
+        sendResponse({ activated: false });
+        return;
+      }
+
+      await chrome.storage.local.set({ enabled: true });
+      await updateBadge(true);
+      sendResponse({
+        activated: true,
+        message: t("toastAutoDomain", [host], `tinyhandChrome: Auto-Start für ${host}`)
+      });
+    })();
+    return true;
+  }
+
+  return false;
+});
+
+// Handle keyboard shortcuts (Alt+H, Alt+C, Alt+S, Alt+F)
 chrome.commands.onCommand.addListener(async (command) => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
   if (command === "toggle-tinyhand") {
     const { enabled = false } = await chrome.storage.local.get("enabled");
     const nextState = !enabled;
     await chrome.storage.local.set({ enabled: nextState });
     await updateBadge(nextState);
-
-    // Send visual notification toast to active tab
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, {
+      await sendToActiveTabWithInject(tab, {
         type: "TINYHAND_TOAST",
-        message: nextState ? "tinyhandChrome: Aktiviert (Shift+Ziehen zum Zeichnen)" : "tinyhandChrome: Deaktiviert"
-      }).catch(() => {});
+        message: nextState
+          ? t("toastActivated", null, "tinyhandChrome: Aktiviert (Shift+Ziehen zum Zeichnen)")
+          : t("toastDeactivated", null, "tinyhandChrome: Deaktiviert")
+      });
     }
   } else if (command === "clear-drawings") {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, { type: "CLEAR_DRAWINGS" }).catch(() => {});
+      await sendToActiveTabWithInject(tab, { type: "CLEAR_DRAWINGS" });
     }
   } else if (command === "switch-style") {
-    const { style = "lavender" } = await chrome.storage.local.get("style");
-    const currentIndex = STYLES.indexOf(style);
-    const nextIndex = (currentIndex + 1) % STYLES.length;
-    const nextStyle = STYLES[nextIndex];
+    const current = await chrome.storage.local.get(["style", "favoriteStyles", "customImage", "includeCustomInCycle"]);
+    const cycleList = GEO.getCycleStyles(current);
+    const currentIndex = cycleList.indexOf(current.style || "lavender");
+    const nextIndex = (currentIndex + 1) % cycleList.length;
+    const nextStyle = cycleList[nextIndex];
     await chrome.storage.local.set({ style: nextStyle });
 
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, {
+      await sendToActiveTabWithInject(tab, {
         type: "TINYHAND_TOAST",
-        message: `tinyhandChrome Stil: ${nextStyle}`
-      }).catch(() => {});
+        message: t("toastStyle", [nextStyle], `tinyhandChrome Stil: ${nextStyle}`)
+      });
+    }
+  } else if (command === "toggle-spotlight") {
+    const { enabled = false, spotlight = false } = await chrome.storage.local.get(["enabled", "spotlight"]);
+    const nextSpotlight = !spotlight;
+    const updates = { spotlight: nextSpotlight };
+    if (nextSpotlight && !enabled) {
+      updates.enabled = true;
+    }
+    await chrome.storage.local.set(updates);
+    if (updates.enabled) {
+      await updateBadge(true);
+    }
+    if (tab?.id) {
+      await sendToActiveTabWithInject(tab, {
+        type: "TINYHAND_TOAST",
+        message: nextSpotlight
+          ? t("toastSpotlightOn", null, "Fokus-Spotlight: Ein")
+          : t("toastSpotlightOff", null, "Fokus-Spotlight: Aus")
+      });
     }
   }
 });
